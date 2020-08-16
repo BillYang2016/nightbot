@@ -116,6 +116,8 @@ bool Response(const int &id,const GroupMessageEvent &event) {
             os << data.dump(4) << endl;
             os.close();
 
+            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"已关闭"+issue["title"].get<string>()+" (#"+to_string(id)+")。");
+
             Notify(1,event,issue); //推送消息
         } catch (nlohmann::detail::type_error &err) { //不存在
             logging::warning("关闭issue","json储存数据不全，指令响应失败");
