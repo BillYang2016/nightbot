@@ -32,7 +32,7 @@ using MessageSegment = cq::message::MessageSegment;
 
 #endif
 
-#include "stringsplit.hpp"
+#include "stringextend.hpp"
 #include "configIO.hpp"
 #include "response.hpp"
 
