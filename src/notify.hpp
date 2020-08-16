@@ -1,3 +1,3 @@
 #pragma once
 
-void Notify(int option,const GroupMessageEvent &event,json issue);
+bool Notify(const int &option,const GroupMessageEvent &event,const json &issue);

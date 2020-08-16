@@ -74,8 +74,10 @@ bool Response(const int &id,const GroupMessageEvent &event) {
             return false;
         }
         data["issue"+to_string(number)]["title"]=cmd[1];
+        data["issue"+to_string(number)]["id"]=to_string(number);
         data["issue"+to_string(number)]["floors"]=1;
         data["issue"+to_string(number)]["floor1"]["content"]=cmd[2];
+        data["issue"+to_string(number)]["floor1"]["group"]=event.group_id;
         data["issue"+to_string(number)]["floor1"]["author"]=event.user_id;
         data["issue"+to_string(number)]["floor1"]["time"]=time(NULL);
         send_group_message(event.group_id,MessageSegment::at(event.user_id)+"已成功创建新issue，序号为"+to_string(number)+"。");
