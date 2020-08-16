@@ -35,8 +35,8 @@ void printDefaultConfig() {
             config["command"][names[i]]["match"]=match_method[i];
             config["command"][names[i]]["priority"]=priority_requied[i];
         }
-        config["notification"]["newissue"]="您在${group}群有新的issue啦！\n${title} (#${id})\n时间：${time}\n发起者：${author}";
-        config["notification"]["closed"]="${group}群的issue被${author}关闭啦！\n${title} (#${id})\n时间：${time}";
+        config["notification"]["newissue"]="您在${group}群有新的issue啦！\n“${title}” (#${id})\n时间：${time}\n发起者：${author}";
+        config["notification"]["closed"]="${group}群的issue被${author}关闭啦！\n“${title}” (#${id})\n时间：${time}";
         ofstream osy(yml);
         osy<<config;
         osy.close();

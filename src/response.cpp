@@ -91,11 +91,17 @@ bool Response(const int &id,const GroupMessageEvent &event) {
         cmd[1]=replace_all_distinct(cmd[1],"[cap3]","#"); //转义
         int id=get_id_by_title(data,cmd[1]);
         if(id==-1) {
-            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"不存在该issue");
+            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"不存在该issue！");
             return false;
         }
 
         json issue=data["issue"+to_string(id)];
+
+        if(issue["status"]=="Closed") {
+            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"该issue已被关闭！");
+            return false;
+        }
+
         issue["status"]="Closed";
         int floors=issue["floors"].get<int>()+1;
         issue["floors"]=floors;
@@ -116,7 +122,7 @@ bool Response(const int &id,const GroupMessageEvent &event) {
             os << data.dump(4) << endl;
             os.close();
 
-            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"已关闭"+issue["title"].get<string>()+" (#"+to_string(id)+")。");
+            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"已关闭“"+issue["title"].get<string>()+"” (#"+to_string(id)+")。");
 
             Notify(1,event,issue); //推送消息
         } catch (nlohmann::detail::type_error &err) { //不存在
