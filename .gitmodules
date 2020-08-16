@@ -1,0 +1,6 @@
+[submodule "extern/cqcppsdk"]
+	path = extern/cqcppsdk
+	url = https://github.com/cqmoe/cqcppsdk.git
+[submodule "extern/yaml"]
+	path = extern/yaml
+	url = https://github.com/jbeder/yaml-cpp.git
