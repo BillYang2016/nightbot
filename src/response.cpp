@@ -1,39 +1,14 @@
 #pragma once
 
-#include <iostream>
-#include <fstream>
-#include <set>
-#include <sstream>
-#include <direct.h>
-#include <io.h>
-
-#include <cqcppsdk/cqcppsdk.h>
-#include <yaml-cpp/yaml.h>
-#include "json.hpp"
-#include "command.hpp"
-
-#ifndef HEADERS
-
-using json = nlohmann::json;
-using node = YAML::Node;
-
-using cq::utils::ansi;
-
-using namespace cq;
-using namespace std;
-using Message = cq::message::Message;
-using MessageSegment = cq::message::MessageSegment;
-
-#define HEADERS
-
-#else
-
-#define HEADERS extern
-
-#endif
+#include "headers.h"
 
 #include "stringextend.hpp"
 #include "notify.hpp"
+
+extern string names[COMMAND_AMOUNT+1];
+extern string commands[COMMAND_AMOUNT+1];
+extern int match_method[COMMAND_AMOUNT+1]; //1模糊 0精确
+extern int priority_requied[COMMAND_AMOUNT+1]; //0全体成员 1管理员或发起者 2仅管理员
 
 bool Response(const int &id,const GroupMessageEvent &event) {
     json data;
@@ -74,12 +49,17 @@ bool Response(const int &id,const GroupMessageEvent &event) {
             return false;
         }
         data["issue"+to_string(number)]["title"]=cmd[1];
-        data["issue"+to_string(number)]["id"]=to_string(number);
+        data["issue"+to_string(number)]["id"]=number;
+        data["issue"+to_string(number)]["group"]=event.group_id;
         data["issue"+to_string(number)]["floors"]=1;
         data["issue"+to_string(number)]["floor1"]["content"]=cmd[2];
-        data["issue"+to_string(number)]["floor1"]["group"]=event.group_id;
         data["issue"+to_string(number)]["floor1"]["author"]=event.user_id;
         data["issue"+to_string(number)]["floor1"]["time"]=time(NULL);
+
+        ofstream os(ansi(dir::app()+"groups\\"+to_string(event.group_id)+".json"));
+        os << data.dump(4) << endl;
+        os.close();
+
         send_group_message(event.group_id,MessageSegment::at(event.user_id)+"已成功创建新issue，序号为"+to_string(number)+"。");
 
         Notify(0,event,data["issue"+to_string(number)]); //推送消息

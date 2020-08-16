@@ -1,40 +1,15 @@
 #pragma once
 
-#include <iostream>
-#include <fstream>
-#include <set>
-#include <sstream>
-#include <direct.h>
-#include <io.h>
-
-#include <cqcppsdk/cqcppsdk.h>
-#include <yaml-cpp/yaml.h>
-#include "json.hpp"
-#include "command.hpp"
-
-#ifndef HEADERS
-
-using json = nlohmann::json;
-using node = YAML::Node;
-
-using cq::utils::ansi;
-
-using namespace cq;
-using namespace std;
-using Message = cq::message::Message;
-using MessageSegment = cq::message::MessageSegment;
-
-#define HEADERS
-
-#else
-
-#define HEADERS extern
-
-#endif
+#include "headers.h"
 
 #include "stringextend.hpp"
 #include "configIO.hpp"
 #include "response.hpp"
+
+extern string names[COMMAND_AMOUNT+1];
+extern string commands[COMMAND_AMOUNT+1];
+extern int match_method[COMMAND_AMOUNT+1]; //1模糊 0精确
+extern int priority_requied[COMMAND_AMOUNT+1]; //0全体成员 1管理员或发起者 2仅管理员
 
 CQ_INIT {
     on_enable([] { 
@@ -58,6 +33,10 @@ CQ_INIT {
         }
 
         if(config["enable"].as<string>()!="true")return; //插件未启用
+
+        //bool ENABLED=0;
+        //for(auto group:groups)if(group==to_string(event.group_id)) {ENABLED=1;break;}
+        //if (ENABLED == 0) return; // 不在启用的群中, 忽略
 
         for(int i=0; i<COMMAND_AMOUNT; i++) { //判断触发命令
             int meth=match_method[i];
