@@ -38,6 +38,8 @@ CQ_INIT {
         for(auto group:groups)if(group==to_string(event.group_id)) {ENABLED=1;break;}
         if (ENABLED == 0) return; // 不在启用的群中, 忽略
 
+        int commandid=-1;
+
         for(int i=0; i<COMMAND_AMOUNT; i++) { //判断触发命令
             int meth=match_method[i];
             string command=commands[i];
@@ -48,9 +50,14 @@ CQ_INIT {
             else flag=event.message.find(command)!=string::npos;
             if(!flag)continue;
 
+            if(commandid==-1||command.length()>commands[commandid].length())commandid=i; //挑选触发的最长命令
+        }
+
+        if(~commandid) {
+            int prio=priority_requied[commandid];
             GroupRole role=get_group_member_info(event.group_id,event.user_id).role;
             if(role==GroupRole::MEMBER&&prio==2)send_group_message(event.group_id,MessageSegment::at(event.user_id)+"你的权限不足！"); //初步判断权限等级
-            else Response(i,event);
+            else Response(commandid,event);
             return;
         }
 

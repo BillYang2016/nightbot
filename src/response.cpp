@@ -24,6 +24,8 @@ int get_id_by_title(const json &data,const string &title) {
     return id;
 }
 
+extern int64_t get_number_by_string(const string &s); //提取字符串中的数字
+
 bool Response(const int &eventtype,const GroupMessageEvent &event) {
     string yml = ansi(dir::app()+"config.yml");
     node config;
@@ -220,7 +222,7 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
         msg=replace_all_distinct(msg,"\\#","[cap3]"); //转义
         vector<string> cmd=stringSplit(msg,"#");
         if(cmd.size()!=3) {
-            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"格式错误，正确格式为"+commands[6]+"#\"issue名或id\"");
+            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"格式错误，正确格式为"+commands[6]+"#\"issue名或id\"#\"tag名\"");
             return false;
         }
         cmd[1]=replace_all_distinct(cmd[1],"[cap3]","#"); //转义
@@ -232,6 +234,11 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
         }
 
         json issue=data["issue"+to_string(id)];
+
+        for(auto it=issue["tags"].begin(); it!=issue["tags"].end(); it++)if(*it==cmd[2]) {
+            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"该tag已存在！");
+            return false;
+        }
 
         int floors=issue["floors"].get<int>()+1;
         issue["floors"]=floors;
@@ -258,6 +265,52 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
             Notify(6,event,issue); //推送消息
         } catch (nlohmann::detail::type_error &err) { //不存在
             logging::warning("添加tag","json储存数据不全，指令响应失败");
+            return false;
+        }
+    } else if(eventtype==7) { //添加指派
+        msg=replace_all_distinct(msg,"\\#","[cap3]"); //转义
+        vector<string> cmd=stringSplit(msg,"#");
+        if(cmd.size()!=3) {
+            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"格式错误，正确格式为"+commands[7]+"#\"issue名或id\"#\"@对象或输入qq号\"");
+            return false;
+        }
+        cmd[1]=replace_all_distinct(cmd[1],"[cap3]","#"); //转义
+        cmd[2]=replace_all_distinct(cmd[2],"[cap3]","#"); //转义
+        int id=get_id_by_title(data,cmd[1]);
+        if(id==-1) {
+            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"不存在该issue！");
+            return false;
+        }
+
+        int64_t qqid=get_number_by_string(cmd[2]);
+
+        json issue=data["issue"+to_string(id)];
+
+        for(auto it=issue["assignees"].begin(); it!=issue["assignees"].end(); it++)if(*it==qqid) {
+            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"该assignee已存在！");
+            return false;
+        }
+
+        int floors=issue["floors"].get<int>()+1;
+        issue["floors"]=floors;
+        issue["floor"+to_string(floors)]["content"]="*Assigned \""+cmd[2]+"\"";
+        issue["assignees"].push_back(qqid);
+        issue["floor"+to_string(floors)]["author"]=event.user_id;
+        issue["floor"+to_string(floors)]["time"]=time(NULL);
+
+        GroupRole role=get_group_member_info(event.group_id,event.user_id).role;
+        try {
+            data["issue"+to_string(id)]=issue;
+
+            ofstream os(ansi(dir::app()+"groups\\"+to_string(event.group_id)+".json"));
+            os << data.dump(4) << endl;
+            os.close();
+
+            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"已为“"+issue["title"].get<string>()+"” (#"+to_string(id)+") 添加指派“"+MessageSegment::at(qqid)+"”。");
+
+            Notify(7,event,issue); //推送消息
+        } catch (nlohmann::detail::type_error &err) { //不存在
+            logging::warning("assign","json储存数据不全，指令响应失败");
             return false;
         }
     } else if(eventtype==8) { //查看issue
@@ -318,7 +371,7 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
         msg=replace_all_distinct(msg,"\\#","[cap3]"); //转义
         vector<string> cmd=stringSplit(msg,"#");
         if(cmd.size()!=3) {
-            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"格式错误，正确格式为"+commands[9]+"#\"issue名或id\"");
+            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"格式错误，正确格式为"+commands[9]+"#\"issue名或id\"#\"tag名\"");
             return false;
         }
         cmd[1]=replace_all_distinct(cmd[1],"[cap3]","#"); //转义
@@ -367,6 +420,58 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
             Notify(9,event,issue); //推送消息
         } catch (nlohmann::detail::type_error &err) { //不存在
             logging::warning("删除tag","json储存数据不全，指令响应失败");
+            return false;
+        }
+    } else if(eventtype==10) { //取消指派
+        msg=replace_all_distinct(msg,"\\#","[cap3]"); //转义
+        vector<string> cmd=stringSplit(msg,"#");
+        if(cmd.size()!=3) {
+            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"格式错误，正确格式为"+commands[10]+"#\"issue名或id\"#\"@对象或输入qq号\"");
+            return false;
+        }
+        cmd[1]=replace_all_distinct(cmd[1],"[cap3]","#"); //转义
+        cmd[2]=replace_all_distinct(cmd[2],"[cap3]","#"); //转义
+        int id=get_id_by_title(data,cmd[1]);
+        if(id==-1) {
+            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"不存在该issue！");
+            return false;
+        }
+
+        int64_t qqid=get_number_by_string(cmd[2]);
+
+        json issue=data["issue"+to_string(id)];
+
+        bool flag=0;
+        for(auto it=issue["assignees"].begin(); it!=issue["assignees"].end(); it++)if(*it==qqid) {
+            flag=1;
+            issue["assignees"].erase(it);
+            break;
+        }
+
+        if(flag==0) {
+            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"不存在该成员！");
+            return false;
+        }
+
+        int floors=issue["floors"].get<int>()+1;
+        issue["floors"]=floors;
+        issue["floor"+to_string(floors)]["content"]="*Unassigned \""+cmd[2]+"\"";
+        issue["floor"+to_string(floors)]["author"]=event.user_id;
+        issue["floor"+to_string(floors)]["time"]=time(NULL);
+
+        GroupRole role=get_group_member_info(event.group_id,event.user_id).role;
+        try {
+            data["issue"+to_string(id)]=issue;
+
+            ofstream os(ansi(dir::app()+"groups\\"+to_string(event.group_id)+".json"));
+            os << data.dump(4) << endl;
+            os.close();
+
+            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"已为“"+issue["title"].get<string>()+"” (#"+to_string(id)+") 取消指派“"+MessageSegment::at(qqid)+"”。");
+
+            Notify(10,event,issue); //推送消息
+        } catch (nlohmann::detail::type_error &err) { //不存在
+            logging::warning("assign","json储存数据不全，指令响应失败");
             return false;
         }
     }

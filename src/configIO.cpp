@@ -15,9 +15,10 @@ void commands_init() {
 	names[4]="reopen",commands[4]="重开issue",match_method[4]=1,priority_requied[4]=1;
 	names[5]="all",commands[5]="全部issue",match_method[5]=0,priority_requied[5]=0;
 	names[6]="newtag",commands[6]="添加tag",match_method[6]=1,priority_requied[6]=1;
-	names[7]="assign",commands[7]="指派issue",match_method[7]=1,priority_requied[7]=2;
+	names[7]="assign",commands[7]="指派",match_method[7]=1,priority_requied[7]=2;
 	names[8]="view",commands[8]="查看issue",match_method[8]=1,priority_requied[8]=0;
 	names[9]="deltag",commands[9]="删除tag",match_method[9]=1,priority_requied[9]=1;
+	names[10]="unassign",commands[10]="取消指派",match_method[10]=1,priority_requied[109]=2;
 }
 
 int get_id_by_name(string name) {
@@ -38,12 +39,14 @@ void printDefaultConfig() {
             config["command"][names[i]]["match"]=match_method[i];
             config["command"][names[i]]["priority"]=priority_requied[i];
         }
-        config["notification"]["newissue"]="您在${group}群有新的issue啦！\n“${title}” (#${id})\n${content}\n时间：${time}\n发起者：${author}";
-        config["notification"]["closed"]="${group}群的issue被${author}关闭啦！\n“${title}” (#${id})\n时间：${time}";
-        config["notification"]["reply"]="${group}群的issue被${author}回复啦！\n“${title}” (#${id})\n${content}\n时间：${time}";
-        config["notification"]["reopened"]="${group}群的issue被${author}重新开启啦！\n“${title}” (#${id})\n时间：${time}";
-        config["notification"]["newtag"]="${author}为${group}群的issue添加了标签！\n“${title}” (#${id})\n${content}\n时间：${time}";
-        config["notification"]["deltag"]="${author}为${group}群的issue删除了标签！\n“${title}” (#${id})\n${content}\n时间：${time}";
+        config["notification"]["newissue"]="您在${group}群有新的issue啦！\n“${title} (#${id})\n${content}\n时间：${time}\n发起者：${author}";
+        config["notification"]["closed"]="${group}群的issue被${author}关闭啦！\n${title} (#${id})\n时间：${time}";
+        config["notification"]["reply"]="${group}群的issue被${author}回复啦！\n${title} (#${id})\n${content}\n时间：${time}";
+        config["notification"]["reopened"]="${group}群的issue被${author}重新开启啦！\n${title} (#${id})\n时间：${time}";
+        config["notification"]["newtag"]="${author}为${group}群的issue添加了标签！\n${title} (#${id})\n${content}\n时间：${time}";
+        config["notification"]["deltag"]="${author}为${group}群的issue删除了标签！\n${title} (#${id})\n${content}\n时间：${time}";
+        config["notification"]["assign"]="${author}为${group}群的issue添加了指派！\n${title} (#${id})\n${content}\n时间：${time}";
+        config["notification"]["unassign"]="${author}为${group}群的issue取消了指派！\n${title} (#${id})\n${content}\n时间：${time}";
         config["reply"]["view"]="${content}\n作者：${author}\n时间：${time}\n----------";
         config["reply"]["perpage"]=5;
         ofstream osy(yml);
