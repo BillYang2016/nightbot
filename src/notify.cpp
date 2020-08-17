@@ -70,9 +70,7 @@ bool Notify(const int &option,const GroupMessageEvent &event,const json &issue) 
             localtime_s(&tm,&t);
             msg=replace_all_distinct(msg,"${time}",to_string(tm.tm_year+1900)+"年"+to_string(tm.tm_mon+1)+"月"+to_string(tm.tm_mday)+"日"+to_string(tm.tm_hour)+"时"+to_string(tm.tm_min)+"分"+to_string(tm.tm_sec)+"秒");
             
-            for(auto id:participants) {
-                send_private_message(id,msg); //因为Mirai的限制，私发消息需要是好友才能发送成功
-            }
+            for(auto id:participants)send_private_message(id,msg); //Mirai-Native可以主动发送临时消息
             
             return true;
         } catch (ApiError &err) {
@@ -104,9 +102,7 @@ bool Notify(const int &option,const GroupMessageEvent &event,const json &issue) 
             localtime_s(&tm,&t);
             msg=replace_all_distinct(msg,"${time}",to_string(tm.tm_year+1900)+"年"+to_string(tm.tm_mon+1)+"月"+to_string(tm.tm_mday)+"日"+to_string(tm.tm_hour)+"时"+to_string(tm.tm_min)+"分"+to_string(tm.tm_sec)+"秒");
             
-            for(auto id:participants) {
-                send_private_message(id,msg); //因为Mirai的限制，私发消息需要是好友才能发送成功
-            }
+            for(auto id:participants)send_private_message(id,msg); //Mirai-Native可以主动发送临时消息
             
             return true;
         } catch (ApiError &err) {
@@ -138,9 +134,7 @@ bool Notify(const int &option,const GroupMessageEvent &event,const json &issue) 
             localtime_s(&tm,&t);
             msg=replace_all_distinct(msg,"${time}",to_string(tm.tm_year+1900)+"年"+to_string(tm.tm_mon+1)+"月"+to_string(tm.tm_mday)+"日"+to_string(tm.tm_hour)+"时"+to_string(tm.tm_min)+"分"+to_string(tm.tm_sec)+"秒");
             
-            for(auto id:participants) {
-                send_private_message(id,msg); //因为Mirai的限制，私发消息需要是好友才能发送成功
-            }
+            for(auto id:participants)send_private_message(id,msg); //Mirai-Native可以主动发送临时消息
 
             return true;
         } catch (ApiError &err) {
@@ -172,9 +166,7 @@ bool Notify(const int &option,const GroupMessageEvent &event,const json &issue) 
             localtime_s(&tm,&t);
             msg=replace_all_distinct(msg,"${time}",to_string(tm.tm_year+1900)+"年"+to_string(tm.tm_mon+1)+"月"+to_string(tm.tm_mday)+"日"+to_string(tm.tm_hour)+"时"+to_string(tm.tm_min)+"分"+to_string(tm.tm_sec)+"秒");
             
-            for(auto id:participants) {
-                send_private_message(id,msg); //因为Mirai的限制，私发消息需要是好友才能发送成功
-            }
+            for(auto id:participants)send_private_message(id,msg); //Mirai-Native可以主动发送临时消息
 
             return true;
         } catch (ApiError &err) {
@@ -211,9 +203,7 @@ bool Notify(const int &option,const GroupMessageEvent &event,const json &issue) 
             localtime_s(&tm,&t);
             msg=replace_all_distinct(msg,"${time}",to_string(tm.tm_year+1900)+"年"+to_string(tm.tm_mon+1)+"月"+to_string(tm.tm_mday)+"日"+to_string(tm.tm_hour)+"时"+to_string(tm.tm_min)+"分"+to_string(tm.tm_sec)+"秒");
             
-            for(auto id:participants) {
-                send_private_message(id,msg); //因为Mirai的限制，私发消息需要是好友才能发送成功
-            }
+            for(auto id:participants)send_private_message(id,msg); //Mirai-Native可以主动发送临时消息
 
             return true;
         } catch (ApiError &err) {
@@ -245,9 +235,7 @@ bool Notify(const int &option,const GroupMessageEvent &event,const json &issue) 
             localtime_s(&tm,&t);
             msg=replace_all_distinct(msg,"${time}",to_string(tm.tm_year+1900)+"年"+to_string(tm.tm_mon+1)+"月"+to_string(tm.tm_mday)+"日"+to_string(tm.tm_hour)+"时"+to_string(tm.tm_min)+"分"+to_string(tm.tm_sec)+"秒");
             
-            for(auto id:participants) {
-                send_private_message(id,msg); //因为Mirai的限制，私发消息需要是好友才能发送成功
-            }
+            for(auto id:participants)send_private_message(id,msg); //Mirai-Native可以主动发送临时消息
 
             return true;
         } catch (ApiError &err) {
@@ -285,9 +273,7 @@ bool Notify(const int &option,const GroupMessageEvent &event,const json &issue) 
             localtime_s(&tm,&t);
             msg=replace_all_distinct(msg,"${time}",to_string(tm.tm_year+1900)+"年"+to_string(tm.tm_mon+1)+"月"+to_string(tm.tm_mday)+"日"+to_string(tm.tm_hour)+"时"+to_string(tm.tm_min)+"分"+to_string(tm.tm_sec)+"秒");
             
-            for(auto id:participants) {
-                send_private_message(id,msg); //因为Mirai的限制，私发消息需要是好友才能发送成功
-            }
+            for(auto id:participants)send_private_message(id,msg); //Mirai-Native可以主动发送临时消息
 
             return true;
         } catch (ApiError &err) {

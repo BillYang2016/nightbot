@@ -87,7 +87,7 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
         os << data.dump(4) << endl;
         os.close();
 
-        send_group_message(event.group_id,MessageSegment::at(event.user_id)+"已成功创建新issue，序号为"+to_string(number)+"。\n请添加本bot好友以获取后续issue推送。");
+        send_group_message(event.group_id,MessageSegment::at(event.user_id)+"已成功创建新issue，序号为"+to_string(number)+"。");
 
         Notify(0,event,data["issue"+to_string(number)]); //推送消息
         return true;
@@ -167,9 +167,87 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
         os << data.dump(4) << endl;
         os.close();
 
-        send_group_message(event.group_id,MessageSegment::at(event.user_id)+"已成功回复“"+issue["title"].get<string>()+"” (#"+to_string(id)+")。\n请添加本bot好友以获取后续issue推送。");
+        send_group_message(event.group_id,MessageSegment::at(event.user_id)+"已成功回复“"+issue["title"].get<string>()+"” (#"+to_string(id)+")。");
 
         Notify(2,event,issue); //推送消息
+    } else if(eventtype==3) { //搜索issue
+        msg=replace_all_distinct(msg,"\\#","[cap3]"); //转义
+        vector<string> cmd=stringSplit(msg,"#");
+        if(cmd.size()!=2&&cmd.size()!=3) {
+            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"格式错误，正确格式为"+commands[3]+"#\"关键词、tag或status\"#页码（选填）");
+            return false;
+        }
+        cmd[1]=replace_all_distinct(cmd[1],"[cap3]","#"); //转义
+
+        int page=0;
+        if(cmd.size()==3)page=atoi(cmd[2].c_str());
+        if(page==0)page=1;
+
+        int number;
+        try {
+            number=data["ammount"].get<int>();
+        } catch (nlohmann::detail::type_error &err) {
+            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"暂无issue！");
+            return false;
+        }
+
+        vector<string> issues;
+        transform(cmd[1].begin(),cmd[1].end(),cmd[1].begin(),::tolower);
+
+        for(int i=1; i<=number; i++) {
+            json issue=data["issue"+to_string(i)];
+            string title=issue["title"].get<string>(),status=issue["status"].get<string>();
+            transform(title.begin(),title.end(),title.begin(),::tolower);
+            transform(status.begin(),status.end(),status.begin(),::tolower);
+
+            bool find=0; //包含tag
+            json tags=issue["tags"];
+
+            for(string tag:issue["tags"]) {
+                transform(tag.begin(),tag.end(),tag.begin(),::tolower);
+                if(tag==cmd[1]) {find=1;break;}
+            }
+
+            if(find || title.find(cmd[1])!=string::npos || status.find(cmd[1])!=string::npos) { //包含tag或者包含标题或者包含状态
+                Message msg=config["reply"]["searcheach"].as<string>();
+                msg=replace_all_distinct(msg,"${title}",issue["title"].get<string>());
+                msg=replace_all_distinct(msg,"${id}",to_string(issue["id"].get<int>()));
+                msg=replace_all_distinct(msg,"${status}",issue["status"].get<string>());
+                string tags;
+                for(string tag:issue["tags"])tags+="["+tag+"] ";
+                msg=replace_all_distinct(msg,"${tags}",tags);
+                issues.push_back(msg);
+            }
+        }
+
+        if(issues.empty()) {
+            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"无合法issue！");
+            return false;
+        }
+
+        int perpage=config["reply"]["search_perpage"].as<int>();
+        if(perpage==0)perpage=5;
+
+        int pages=(issues.size()-1)/perpage+1;
+        if(page<1||page>pages) {
+            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"不存在该页码（"+to_string(page)+"/"+to_string(pages)+"）！");
+            return false;
+        }
+
+        Message reply=config["reply"]["search"].as<string>(),searcheach;
+
+        reply=replace_all_distinct(reply,"${at}",MessageSegment::at(event.user_id));
+        reply=replace_all_distinct(reply,"${pagenum}",to_string(page)+"/"+to_string(pages));
+
+        for(int i=0; i<perpage; i++) {
+            int num=(page-1)*perpage+i;
+            if(num>=issues.size())break;
+            searcheach+=issues[num]+"\n";
+        }
+
+        reply=replace_all_distinct(reply,"${searcheach}",searcheach);
+        
+        send_group_message(event.group_id,reply);
     } else if(eventtype==4) { //重开issue
         msg=replace_all_distinct(msg,"\\#","[cap3]"); //转义
         vector<string> cmd=stringSplit(msg,"#");
@@ -218,6 +296,57 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
             logging::warning("重开issue","json储存数据不全，指令响应失败");
             return false;
         }
+    } else if(eventtype==5) { //搜索全部issue
+        msg=replace_all_distinct(msg,"\\#","[cap3]"); //转义
+        vector<string> cmd=stringSplit(msg,"#");
+        if(cmd.size()!=1&&cmd.size()!=2) {
+            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"格式错误，正确格式为"+commands[5]+"#页码（选填）");
+            return false;
+        }
+
+        int page=0;
+        if(cmd.size()==2)page=atoi(cmd[1].c_str());
+        if(page==0)page=1;
+
+        int number;
+        try {
+            number=data["ammount"].get<int>();
+        } catch (nlohmann::detail::type_error &err) {
+            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"暂无issue！");
+            return false;
+        }
+
+        int perpage=config["reply"]["search_perpage"].as<int>();
+        if(perpage==0)perpage=5;
+
+        int pages=(number-1)/perpage+1;
+        if(page<1||page>pages) {
+            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"不存在该页码（"+to_string(page)+"/"+to_string(pages)+"）！");
+            return false;
+        }
+
+        Message reply=config["reply"]["search"].as<string>(),searcheach;
+
+        reply=replace_all_distinct(reply,"${at}",MessageSegment::at(event.user_id));
+        reply=replace_all_distinct(reply,"${pagenum}",to_string(page)+"/"+to_string(pages));
+
+        for(int i=1; i<=perpage; i++) {
+            int num=(page-1)*perpage+i;
+            if(num>=number)break;
+            json issue=data["issue"+to_string(num)];
+            Message msg=config["reply"]["searcheach"].as<string>();
+            msg=replace_all_distinct(msg,"${title}",issue["title"].get<string>());
+            msg=replace_all_distinct(msg,"${id}",to_string(issue["id"].get<int>()));
+            msg=replace_all_distinct(msg,"${status}",issue["status"].get<string>());
+            string tags;
+            for(string tag:issue["tags"])tags+="["+tag+"] ";
+            msg=replace_all_distinct(msg,"${tags}",tags);
+            searcheach+=msg+"\n";
+        }
+
+        reply=replace_all_distinct(reply,"${searcheach}",searcheach);
+        
+        send_group_message(event.group_id,reply);
     } else if(eventtype==6) { //添加tag
         msg=replace_all_distinct(msg,"\\#","[cap3]"); //转义
         vector<string> cmd=stringSplit(msg,"#");
@@ -334,7 +463,7 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
         
         json issue=data["issue"+to_string(id)];
 
-        int perpage=config["reply"]["perpage"].as<int>();
+        int perpage=config["reply"]["view_perpage"].as<int>();
         if(perpage==0)perpage=5;
 
         int floors=issue["floors"].get<int>();
@@ -345,16 +474,31 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
             return false;
         }
 
-        Message reply=MessageSegment::at(event.user_id)+"\n"+issue["title"].get<string>()+" (#"+to_string(id)+") ["+issue["status"].get<string>()+"]\n"+to_string(page)+"/"+to_string(pages)+"页\n";
+        Message reply=config["reply"]["view"].as<string>(),vieweach;
 
-        for(string tag:issue["tags"])reply+="["+tag+"] ";
+        reply=replace_all_distinct(reply,"${at}",MessageSegment::at(event.user_id));
+        reply=replace_all_distinct(reply,"${title}",issue["title"].get<string>());
+        reply=replace_all_distinct(reply,"${id}",to_string(id));
+        reply=replace_all_distinct(reply,"${status}",issue["status"].get<string>());
+        reply=replace_all_distinct(reply,"${pagenum}",to_string(page)+"/"+to_string(pages));
 
-        reply+="\n----------\n";
+        string tags,assignees;
+        for(string tag:issue["tags"])tags+="["+tag+"] ";
+
+        reply=replace_all_distinct(reply,"${tags}",tags);
+
+        for(int64_t qqid:issue["assignees"]) {
+            GroupMember gm=get_group_member_info(issue["group"].get<int64_t>(),qqid);
+            if(gm.card=="")assignees+=gm.nickname+"("+to_string(gm.user_id)+") ";
+            else assignees+=gm.card+"("+to_string(gm.user_id)+") ";
+        }
+
+        reply=replace_all_distinct(reply,"${assignees}",assignees);
 
         for(int i=1; i<=perpage; i++) {
             int num=(page-1)*perpage+i;
             if(num>floors)break;
-            Message msg=config["reply"]["view"].as<string>();
+            Message msg=config["reply"]["vieweach"].as<string>();
             msg=replace_all_distinct(msg,"${content}",issue["floor"+to_string(num)]["content"]);
             GroupMember gm=get_group_member_info(issue["group"].get<int64_t>(),issue["floor"+to_string(num)]["author"].get<int64_t>());
             if(gm.card=="")msg=replace_all_distinct(msg,"${author}",gm.nickname+"("+to_string(gm.user_id)+")");
@@ -363,8 +507,10 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
             struct tm tm;
             localtime_s(&tm,&t);
             msg=replace_all_distinct(msg,"${time}",to_string(tm.tm_year+1900)+"年"+to_string(tm.tm_mon+1)+"月"+to_string(tm.tm_mday)+"日"+to_string(tm.tm_hour)+"时"+to_string(tm.tm_min)+"分"+to_string(tm.tm_sec)+"秒");
-            reply+=msg+"\n";
+            vieweach+=msg+"\n";
         }
+
+        reply=replace_all_distinct(reply,"${vieweach}",vieweach);
 
         send_group_message(event.group_id,reply);
     } else if(eventtype==9) { //删除tag

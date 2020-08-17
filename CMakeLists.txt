@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.9)
-project(wikibot) # 填写项目名称
+project(issuebot) # 填写项目名称
 
 set(CMAKE_CXX_STANDARD 17) # 设置 C++ 标准版本为 C++17, 必须
 
