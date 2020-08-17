@@ -25,7 +25,8 @@ bool Notify(const int &option,const GroupMessageEvent &event,const json &issue) 
             msg=replace_all_distinct(msg,"${group}",to_string(issue["group"].get<int64_t>()));
             msg=replace_all_distinct(msg,"${content}",issue["floor1"]["content"].get<string>());
             GroupMember gm=get_group_member_info(issue["group"].get<int64_t>(),issue["floor1"]["author"].get<int64_t>());
-            msg=replace_all_distinct(msg,"${author}",gm.card+"("+to_string(gm.user_id)+")");
+            if(gm.card=="")msg=replace_all_distinct(msg,"${author}",gm.nickname+"("+to_string(gm.user_id)+")");
+            else msg=replace_all_distinct(msg,"${author}",gm.card+"("+to_string(gm.user_id)+")");
             time_t t=issue["floor1"]["time"].get<time_t>();
             struct tm tm;
             localtime_s(&tm,&t);
@@ -53,7 +54,8 @@ bool Notify(const int &option,const GroupMessageEvent &event,const json &issue) 
             msg=replace_all_distinct(msg,"${title}",issue["title"].get<string>());
             msg=replace_all_distinct(msg,"${group}",to_string(issue["group"].get<int64_t>()));
             GroupMember gm=get_group_member_info(issue["group"].get<int64_t>(),event.user_id);
-            msg=replace_all_distinct(msg,"${author}",gm.card+"("+to_string(gm.user_id)+")");
+            if(gm.card=="")msg=replace_all_distinct(msg,"${author}",gm.nickname+"("+to_string(gm.user_id)+")");
+            else msg=replace_all_distinct(msg,"${author}",gm.card+"("+to_string(gm.user_id)+")");
             time_t t=issue["floor"+to_string(floors)]["time"].get<time_t>();
             struct tm tm;
             localtime_s(&tm,&t);
@@ -84,7 +86,8 @@ bool Notify(const int &option,const GroupMessageEvent &event,const json &issue) 
             msg=replace_all_distinct(msg,"${group}",to_string(issue["group"].get<int64_t>()));
             msg=replace_all_distinct(msg,"${content}",issue["floor"+to_string(floors)]["content"].get<string>());
             GroupMember gm=get_group_member_info(issue["group"].get<int64_t>(),event.user_id);
-            msg=replace_all_distinct(msg,"${author}",gm.card+"("+to_string(gm.user_id)+")");
+            if(gm.card=="")msg=replace_all_distinct(msg,"${author}",gm.nickname+"("+to_string(gm.user_id)+")");
+            else msg=replace_all_distinct(msg,"${author}",gm.card+"("+to_string(gm.user_id)+")");
             time_t t=issue["floor"+to_string(floors)]["time"].get<time_t>();
             struct tm tm;
             localtime_s(&tm,&t);

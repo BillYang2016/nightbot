@@ -25,6 +25,15 @@ int get_id_by_title(const json &data,const string &title) {
 }
 
 bool Response(const int &eventtype,const GroupMessageEvent &event) {
+    string yml = ansi(dir::app()+"config.yml");
+    node config;
+
+    try { //读取配置
+        config = YAML::LoadFile(yml);
+    } catch (ApiError &err) {
+        logging::warning("加载数据","读取配置失败！错误码："+to_string(err.code));
+    }
+
     json data;
     try { //读取数据
         ifstream jsonFile(ansi(dir::app()+"groups\\"+to_string(event.group_id)+".json"));
@@ -159,6 +168,56 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
         send_group_message(event.group_id,MessageSegment::at(event.user_id)+"已成功回复“"+issue["title"].get<string>()+"” (#"+to_string(id)+")。\n请添加本bot好友以获取后续issue推送。");
 
         Notify(2,event,issue); //推送消息
+    } else if(eventtype==8) { //查看issue
+        msg=replace_all_distinct(msg,"\\#","[cap3]"); //转义
+        vector<string> cmd=stringSplit(msg,"#");
+        if(cmd.size()!=2&&cmd.size()!=3) {
+            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"格式错误，正确格式为"+commands[1]+"#\"issue名或id\"#\"页码（选填）\"");
+            return false;
+        }
+        cmd[1]=replace_all_distinct(cmd[1],"[cap3]","#"); //转义
+
+        int page=0;
+        if(cmd.size()==3)page=atoi(cmd[2].c_str());
+        if(page==0)page=1;
+
+        int id=get_id_by_title(data,cmd[1]);
+        if(id==-1) {
+            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"不存在该issue！");
+            return false;
+        }
+        
+        json issue=data["issue"+to_string(id)];
+
+        int perpage=config["reply"]["perpage"].as<int>();
+        if(perpage==0)perpage=5;
+        
+        int floors=issue["floors"].get<int>();
+        int pages=(floors-1)/perpage+1;
+
+        if(page<1||page>pages) {
+            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"不存在该页码（"+to_string(page)+"/"+to_string(pages)+"）！");
+            return false;
+        }
+
+        Message reply=MessageSegment::at(event.user_id)+"\n"+issue["title"].get<string>()+" (#"+to_string(id)+") ["+issue["status"].get<string>()+"]\n"+to_string(page)+"/"+to_string(pages)+"页\n----------\n";
+
+        for(int i=1; i<=perpage; i++) {
+            int num=(page-1)*perpage+i;
+            if(num>floors)break;
+            Message msg=config["reply"]["view"].as<string>();
+            msg=replace_all_distinct(msg,"${content}",issue["floor"+to_string(num)]["content"]);
+            GroupMember gm=get_group_member_info(issue["group"].get<int64_t>(),issue["floor"+to_string(num)]["author"].get<int64_t>());
+            if(gm.card=="")msg=replace_all_distinct(msg,"${author}",gm.nickname+"("+to_string(gm.user_id)+")");
+            else msg=replace_all_distinct(msg,"${author}",gm.card+"("+to_string(gm.user_id)+")");
+            time_t t=issue["floor"+to_string(num)]["time"].get<time_t>();
+            struct tm tm;
+            localtime_s(&tm,&t);
+            msg=replace_all_distinct(msg,"${time}",to_string(tm.tm_year+1900)+"年"+to_string(tm.tm_mon+1)+"月"+to_string(tm.tm_mday)+"日"+to_string(tm.tm_hour)+"时"+to_string(tm.tm_min)+"分"+to_string(tm.tm_sec)+"秒");
+            reply+=msg+"\n";
+        }
+
+        send_group_message(event.group_id,reply);
     }
 
     return false;

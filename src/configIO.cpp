@@ -16,6 +16,8 @@ void commands_init() {
 	names[5]="all",commands[5]="全部issue",match_method[5]=0,priority_requied[5]=0;
 	names[6]="newtag",commands[6]="添加tag",match_method[6]=1,priority_requied[6]=1;
 	names[7]="assign",commands[7]="指派issue",match_method[7]=1,priority_requied[7]=2;
+	names[8]="view",commands[8]="查看issue",match_method[8]=1,priority_requied[8]=0;
+	names[9]="deltag",commands[9]="删除tag",match_method[9]=1,priority_requied[9]=1;
 }
 
 int get_id_by_name(string name) {
@@ -39,6 +41,8 @@ void printDefaultConfig() {
         config["notification"]["newissue"]="您在${group}群有新的issue啦！\n“${title}” (#${id})\n${content}\n时间：${time}\n发起者：${author}";
         config["notification"]["closed"]="${group}群的issue被${author}关闭啦！\n“${title}” (#${id})\n时间：${time}";
         config["notification"]["reply"]="${group}群的issue被${author}回复啦！\n“${title}” (#${id})\n${content}\n时间：${time}";
+        config["reply"]["view"]="${content}\n作者：${author}\n时间：${time}\n----------";
+        config["reply"]["perpage"]=5;
         ofstream osy(yml);
         osy<<config;
         osy.close();
