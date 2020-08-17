@@ -113,7 +113,7 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
         issue["status"]="Closed";
         int floors=issue["floors"].get<int>()+1;
         issue["floors"]=floors;
-        issue["floor"+to_string(floors)]["content"]="Closed this issue";
+        issue["floor"+to_string(floors)]["content"]="*Closed this issue";
         issue["floor"+to_string(floors)]["author"]=event.user_id;
         issue["floor"+to_string(floors)]["time"]=time(NULL);
 
@@ -141,7 +141,7 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
         msg=replace_all_distinct(msg,"\\#","[cap3]"); //转义
         vector<string> cmd=stringSplit(msg,"#");
         if(cmd.size()!=3) {
-            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"格式错误，正确格式为"+commands[1]+"#\"issue名或id\"#\"内容\"");
+            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"格式错误，正确格式为"+commands[2]+"#\"issue名或id\"#\"内容\"");
             return false;
         }
         cmd[1]=replace_all_distinct(cmd[1],"[cap3]","#"); //转义
@@ -168,11 +168,103 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
         send_group_message(event.group_id,MessageSegment::at(event.user_id)+"已成功回复“"+issue["title"].get<string>()+"” (#"+to_string(id)+")。\n请添加本bot好友以获取后续issue推送。");
 
         Notify(2,event,issue); //推送消息
+    } else if(eventtype==4) { //重开issue
+        msg=replace_all_distinct(msg,"\\#","[cap3]"); //转义
+        vector<string> cmd=stringSplit(msg,"#");
+        if(cmd.size()!=2) {
+            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"格式错误，正确格式为"+commands[4]+"#\"issue名或id\"");
+            return false;
+        }
+        cmd[1]=replace_all_distinct(cmd[1],"[cap3]","#"); //转义
+        int id=get_id_by_title(data,cmd[1]);
+        if(id==-1) {
+            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"不存在该issue！");
+            return false;
+        }
+
+        json issue=data["issue"+to_string(id)];
+
+        if(issue["status"]=="Open") {
+            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"该issue Open中！");
+            return false;
+        }
+
+        issue["status"]="Open";
+        int floors=issue["floors"].get<int>()+1;
+        issue["floors"]=floors;
+        issue["floor"+to_string(floors)]["content"]="*Reopened this issue";
+        issue["floor"+to_string(floors)]["author"]=event.user_id;
+        issue["floor"+to_string(floors)]["time"]=time(NULL);
+
+        GroupRole role=get_group_member_info(event.group_id,event.user_id).role;
+        try {
+            if(role==GroupRole::MEMBER && event.user_id!=issue["floor1"]["author"].get<int64_t>()) { //权限不足
+                send_group_message(event.group_id,MessageSegment::at(event.user_id)+"你的权限不足！");
+                return false;
+            }
+
+            data["issue"+to_string(id)]=issue;
+
+            ofstream os(ansi(dir::app()+"groups\\"+to_string(event.group_id)+".json"));
+            os << data.dump(4) << endl;
+            os.close();
+
+            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"已重新开启“"+issue["title"].get<string>()+"” (#"+to_string(id)+")。");
+
+            Notify(4,event,issue); //推送消息
+        } catch (nlohmann::detail::type_error &err) { //不存在
+            logging::warning("关闭issue","json储存数据不全，指令响应失败");
+            return false;
+        }
+    } else if(eventtype==6) { //添加tag
+        msg=replace_all_distinct(msg,"\\#","[cap3]"); //转义
+        vector<string> cmd=stringSplit(msg,"#");
+        if(cmd.size()!=3) {
+            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"格式错误，正确格式为"+commands[6]+"#\"issue名或id\"");
+            return false;
+        }
+        cmd[1]=replace_all_distinct(cmd[1],"[cap3]","#"); //转义
+        cmd[2]=replace_all_distinct(cmd[2],"[cap3]","#"); //转义
+        int id=get_id_by_title(data,cmd[1]);
+        if(id==-1) {
+            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"不存在该issue！");
+            return false;
+        }
+
+        json issue=data["issue"+to_string(id)];
+
+        int floors=issue["floors"].get<int>()+1;
+        issue["floors"]=floors;
+        issue["floor"+to_string(floors)]["content"]="*Added tag \""+cmd[2]+"\"";
+        issue["tags"].push_back(cmd[2]);
+        issue["floor"+to_string(floors)]["author"]=event.user_id;
+        issue["floor"+to_string(floors)]["time"]=time(NULL);
+
+        GroupRole role=get_group_member_info(event.group_id,event.user_id).role;
+        try {
+            if(role==GroupRole::MEMBER && event.user_id!=issue["floor1"]["author"].get<int64_t>()) { //权限不足
+                send_group_message(event.group_id,MessageSegment::at(event.user_id)+"你的权限不足！");
+                return false;
+            }
+
+            data["issue"+to_string(id)]=issue;
+
+            ofstream os(ansi(dir::app()+"groups\\"+to_string(event.group_id)+".json"));
+            os << data.dump(4) << endl;
+            os.close();
+
+            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"已为“"+issue["title"].get<string>()+"” (#"+to_string(id)+")添加标签“"+cmd[2]+"”。");
+
+            Notify(6,event,issue); //推送消息
+        } catch (nlohmann::detail::type_error &err) { //不存在
+            logging::warning("关闭issue","json储存数据不全，指令响应失败");
+            return false;
+        }
     } else if(eventtype==8) { //查看issue
         msg=replace_all_distinct(msg,"\\#","[cap3]"); //转义
         vector<string> cmd=stringSplit(msg,"#");
         if(cmd.size()!=2&&cmd.size()!=3) {
-            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"格式错误，正确格式为"+commands[1]+"#\"issue名或id\"#\"页码（选填）\"");
+            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"格式错误，正确格式为"+commands[8]+"#\"issue名或id\"#\"页码（选填）\"");
             return false;
         }
         cmd[1]=replace_all_distinct(cmd[1],"[cap3]","#"); //转义
@@ -191,7 +283,7 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
 
         int perpage=config["reply"]["perpage"].as<int>();
         if(perpage==0)perpage=5;
-        
+
         int floors=issue["floors"].get<int>();
         int pages=(floors-1)/perpage+1;
 
@@ -200,7 +292,11 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
             return false;
         }
 
-        Message reply=MessageSegment::at(event.user_id)+"\n"+issue["title"].get<string>()+" (#"+to_string(id)+") ["+issue["status"].get<string>()+"]\n"+to_string(page)+"/"+to_string(pages)+"页\n----------\n";
+        Message reply=MessageSegment::at(event.user_id)+"\n"+issue["title"].get<string>()+" (#"+to_string(id)+") ["+issue["status"].get<string>()+"]\n"+to_string(page)+"/"+to_string(pages)+"页\n";
+
+        for(string tag:issue["tags"])reply+="["+tag+"] ";
+
+        reply+="\n----------\n";
 
         for(int i=1; i<=perpage; i++) {
             int num=(page-1)*perpage+i;

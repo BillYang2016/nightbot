@@ -64,6 +64,8 @@ bool Notify(const int &option,const GroupMessageEvent &event,const json &issue) 
             for(auto id:participants) {
                 send_private_message(id,msg); //因为Mirai的限制，私发消息需要是好友才能发送成功
             }
+            
+            return true;
         } catch (ApiError &err) {
             logging::warning("加载数据","读取配置失败！错误码："+to_string(err.code));
             return false;
@@ -96,6 +98,76 @@ bool Notify(const int &option,const GroupMessageEvent &event,const json &issue) 
             for(auto id:participants) {
                 send_private_message(id,msg); //因为Mirai的限制，私发消息需要是好友才能发送成功
             }
+            
+            return true;
+        } catch (ApiError &err) {
+            logging::warning("加载数据","读取配置失败！错误码："+to_string(err.code));
+            return false;
+        }
+    } else if(option==4) { //重开issue，发送给所有参与者
+        try { //读取配置
+            int floors=issue["floors"].get<int>();
+            set<int64_t> participants;
+            for(int i=1; i<=floors; i++) {
+                int64_t id=issue["floor"+to_string(i)]["author"].get<int64_t>();
+                if(participants.count(id)!=0||id==event.user_id)continue;
+                participants.insert(id);
+            }
+
+            if(participants.count(admin)==0&&admin!=event.user_id)participants.insert(admin);
+
+            Message msg=config["notification"]["reopened"].as<string>();
+            msg=replace_all_distinct(msg,"${id}",to_string(issue["id"].get<int>()));
+            msg=replace_all_distinct(msg,"${title}",issue["title"].get<string>());
+            msg=replace_all_distinct(msg,"${group}",to_string(issue["group"].get<int64_t>()));
+            msg=replace_all_distinct(msg,"${content}",issue["floor"+to_string(floors)]["content"].get<string>());
+            GroupMember gm=get_group_member_info(issue["group"].get<int64_t>(),event.user_id);
+            if(gm.card=="")msg=replace_all_distinct(msg,"${author}",gm.nickname+"("+to_string(gm.user_id)+")");
+            else msg=replace_all_distinct(msg,"${author}",gm.card+"("+to_string(gm.user_id)+")");
+            time_t t=issue["floor"+to_string(floors)]["time"].get<time_t>();
+            struct tm tm;
+            localtime_s(&tm,&t);
+            msg=replace_all_distinct(msg,"${time}",to_string(tm.tm_year+1900)+"年"+to_string(tm.tm_mon+1)+"月"+to_string(tm.tm_mday)+"日"+to_string(tm.tm_hour)+"时"+to_string(tm.tm_min)+"分"+to_string(tm.tm_sec)+"秒");
+            
+            for(auto id:participants) {
+                send_private_message(id,msg); //因为Mirai的限制，私发消息需要是好友才能发送成功
+            }
+
+            return true;
+        } catch (ApiError &err) {
+            logging::warning("加载数据","读取配置失败！错误码："+to_string(err.code));
+            return false;
+        }
+    } else if(option==6) { //添加tag，发送给所有参与者
+        try { //读取配置
+            int floors=issue["floors"].get<int>();
+            set<int64_t> participants;
+            for(int i=1; i<=floors; i++) {
+                int64_t id=issue["floor"+to_string(i)]["author"].get<int64_t>();
+                if(participants.count(id)!=0||id==event.user_id)continue;
+                participants.insert(id);
+            }
+
+            if(participants.count(admin)==0&&admin!=event.user_id)participants.insert(admin);
+
+            Message msg=config["notification"]["newtag"].as<string>();
+            msg=replace_all_distinct(msg,"${id}",to_string(issue["id"].get<int>()));
+            msg=replace_all_distinct(msg,"${title}",issue["title"].get<string>());
+            msg=replace_all_distinct(msg,"${group}",to_string(issue["group"].get<int64_t>()));
+            msg=replace_all_distinct(msg,"${content}",issue["floor"+to_string(floors)]["content"].get<string>());
+            GroupMember gm=get_group_member_info(issue["group"].get<int64_t>(),event.user_id);
+            if(gm.card=="")msg=replace_all_distinct(msg,"${author}",gm.nickname+"("+to_string(gm.user_id)+")");
+            else msg=replace_all_distinct(msg,"${author}",gm.card+"("+to_string(gm.user_id)+")");
+            time_t t=issue["floor"+to_string(floors)]["time"].get<time_t>();
+            struct tm tm;
+            localtime_s(&tm,&t);
+            msg=replace_all_distinct(msg,"${time}",to_string(tm.tm_year+1900)+"年"+to_string(tm.tm_mon+1)+"月"+to_string(tm.tm_mday)+"日"+to_string(tm.tm_hour)+"时"+to_string(tm.tm_min)+"分"+to_string(tm.tm_sec)+"秒");
+            
+            for(auto id:participants) {
+                send_private_message(id,msg); //因为Mirai的限制，私发消息需要是好友才能发送成功
+            }
+
+            return true;
         } catch (ApiError &err) {
             logging::warning("加载数据","读取配置失败！错误码："+to_string(err.code));
             return false;

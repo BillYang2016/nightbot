@@ -41,6 +41,8 @@ void printDefaultConfig() {
         config["notification"]["newissue"]="您在${group}群有新的issue啦！\n“${title}” (#${id})\n${content}\n时间：${time}\n发起者：${author}";
         config["notification"]["closed"]="${group}群的issue被${author}关闭啦！\n“${title}” (#${id})\n时间：${time}";
         config["notification"]["reply"]="${group}群的issue被${author}回复啦！\n“${title}” (#${id})\n${content}\n时间：${time}";
+        config["notification"]["reopened"]="${group}群的issue被${author}重新开启啦！\n“${title}” (#${id})\n时间：${time}";
+        config["notification"]["newtag"]="${author}为${group}群的issue添加了标签！\n“${title}” (#${id})\n${content}\n时间：${time}";
         config["reply"]["view"]="${content}\n作者：${author}\n时间：${time}\n----------";
         config["reply"]["perpage"]=5;
         ofstream osy(yml);
