@@ -14,8 +14,6 @@ add_definitions(-DCURL_STATICLIB) # 设置使用静态库
 
 include_directories(src) # 设置 src 目录为包含目录, 可根据实际情况修改
 
-link_directories(lib) # Mirai-Native-API
-
 # 从 app_id.txt 文件读取 app id, 也可以直接设置
 file(READ "app_id.txt" APP_ID)
 string(STRIP "${APP_ID}" APP_ID)

@@ -24,7 +24,7 @@ int get_id_by_title(const json &data,const string &title) {
     return id;
 }
 
-bool Response(const int &id,const GroupMessageEvent &event) {
+bool Response(const int &eventtype,const GroupMessageEvent &event) {
     json data;
     try { //读取数据
         ifstream jsonFile(ansi(dir::app()+"groups\\"+to_string(event.group_id)+".json"));
@@ -43,12 +43,11 @@ bool Response(const int &id,const GroupMessageEvent &event) {
 
     string msg=event.message;
     char newl[2]= {char(13),char(10)}; //处理一下换行
-    msg=replace_all_distinct(msg,newl,"[换行符]");
-    msg=replace_all_distinct(msg,string(1,char(13)),"[换行符]");
-    msg=replace_all_distinct(msg,string(1,char(10)),"[换行符]");
-    msg=replace_all_distinct(msg,string(1,'\n'),"[换行符]");
+    msg=replace_all_distinct(msg,newl,"\n");
+    msg=replace_all_distinct(msg,string(1,char(13)),"\n");
+    msg=replace_all_distinct(msg,string(1,char(10)),"\n");
 
-    if(id==0) { //添加issue
+    if(eventtype==0) { //添加issue
         int number;
         try {
             number=data["ammount"].get<int>()+1;
@@ -77,15 +76,15 @@ bool Response(const int &id,const GroupMessageEvent &event) {
         os << data.dump(4) << endl;
         os.close();
 
-        send_group_message(event.group_id,MessageSegment::at(event.user_id)+"已成功创建新issue，序号为"+to_string(number)+"。");
+        send_group_message(event.group_id,MessageSegment::at(event.user_id)+"已成功创建新issue，序号为"+to_string(number)+"。\n请添加本bot好友以获取后续issue推送。");
 
         Notify(0,event,data["issue"+to_string(number)]); //推送消息
         return true;
-    } else if(id==1) { //关闭issue
+    } else if(eventtype==1) { //关闭issue
         msg=replace_all_distinct(msg,"\\#","[cap3]"); //转义
         vector<string> cmd=stringSplit(msg,"#");
         if(cmd.size()!=2) {
-            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"格式错误，正确格式为"+commands[1]+"#\"issue名\"");
+            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"格式错误，正确格式为"+commands[1]+"#\"issue名或id\"");
             return false;
         }
         cmd[1]=replace_all_distinct(cmd[1],"[cap3]","#"); //转义
@@ -129,6 +128,37 @@ bool Response(const int &id,const GroupMessageEvent &event) {
             logging::warning("关闭issue","json储存数据不全，指令响应失败");
             return false;
         }
+    } else if(eventtype==2) { //回复issue
+        msg=replace_all_distinct(msg,"\\#","[cap3]"); //转义
+        vector<string> cmd=stringSplit(msg,"#");
+        if(cmd.size()!=3) {
+            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"格式错误，正确格式为"+commands[1]+"#\"issue名或id\"#\"内容\"");
+            return false;
+        }
+        cmd[1]=replace_all_distinct(cmd[1],"[cap3]","#"); //转义
+        cmd[2]=replace_all_distinct(cmd[2],"[cap3]","#"); //转义
+        int id=get_id_by_title(data,cmd[1]);
+        if(id==-1) {
+            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"不存在该issue！");
+            return false;
+        }
+        
+        json issue=data["issue"+to_string(id)];
+
+        int floors=issue["floors"].get<int>()+1;
+        issue["floors"]=floors;
+        issue["floor"+to_string(floors)]["content"]=cmd[2];
+        issue["floor"+to_string(floors)]["author"]=event.user_id;
+        issue["floor"+to_string(floors)]["time"]=time(NULL);
+        
+        data["issue"+to_string(id)]=issue;
+        ofstream os(ansi(dir::app()+"groups\\"+to_string(event.group_id)+".json"));
+        os << data.dump(4) << endl;
+        os.close();
+
+        send_group_message(event.group_id,MessageSegment::at(event.user_id)+"已成功回复“"+issue["title"].get<string>()+"” (#"+to_string(id)+")。\n请添加本bot好友以获取后续issue推送。");
+
+        Notify(2,event,issue); //推送消息
     }
 
     return false;

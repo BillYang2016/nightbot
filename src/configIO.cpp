@@ -30,13 +30,15 @@ void printDefaultConfig() {
         config["enable"]="false";
         config["groups"]="0";
         config["admin"]="-1";
+        config["friendrequest"]="0";
         for(int i=0; i<COMMAND_AMOUNT; i++) {
             config["command"][names[i]]["keyword"]=commands[i];
             config["command"][names[i]]["match"]=match_method[i];
             config["command"][names[i]]["priority"]=priority_requied[i];
         }
-        config["notification"]["newissue"]="您在${group}群有新的issue啦！\n“${title}” (#${id})\n时间：${time}\n发起者：${author}";
+        config["notification"]["newissue"]="您在${group}群有新的issue啦！\n“${title}” (#${id})\n${content}\n时间：${time}\n发起者：${author}";
         config["notification"]["closed"]="${group}群的issue被${author}关闭啦！\n“${title}” (#${id})\n时间：${time}";
+        config["notification"]["reply"]="${group}群的issue被${author}回复啦！\n“${title}” (#${id})\n${content}\n时间：${time}";
         ofstream osy(yml);
         osy<<config;
         osy.close();
