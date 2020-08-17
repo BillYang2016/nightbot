@@ -55,4 +55,16 @@ CQ_INIT {
         }
 
     });
+
+    on_friend_request([](const FriendRequestEvent &event) {
+        string yml = ansi(dir::app()+"config.yml");
+        node config;
+        try { //读取配置
+            config = YAML::LoadFile(yml);
+        } catch (ApiError &err) {
+            logging::warning("加载数据","读取配置失败！错误码："+to_string(err.code));
+        }
+        if(config["friendrequest"].as<int>()==0)return; //忽略
+        set_friend_request(event.flag,RequestEvent::Operation::APPROVE); //自动同意好友请求
+    });
 }

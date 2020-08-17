@@ -56,6 +56,13 @@
             "name": "讨论组消息",
             "function": "cq_event_discuss_message",
             "priority": 30000
+        },
+        {
+            "id": 11,
+            "type": 301,
+            "name": "好友请求",
+            "function": "cq_event_friend_request",
+            "priority": 30000
         }
     ],
     "menu": [
@@ -68,6 +75,7 @@
         130,
         131,
         132,
+        150,
         160,
         161,
         162
