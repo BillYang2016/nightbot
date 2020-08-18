@@ -32,6 +32,19 @@
 4. 打开`config.yml`并在`groups`项输入启用群号，使用','进行分割
 5. 恭喜，插件可以正常运行啦！
 
+## 默认指令
+1. add：`添加issue#${issue标题}#${详细内容}` 添加一个新的issue
+2. close：`关闭issue#${issue标题或id}` 将一个issue的状态设置为`Closed`
+3. reply：`回复issue#${issue标题或id}#${详细内容}` 回复一个issue
+4. search：`搜索issue#${关键词、状态或tag}#${页码，选填}` 搜索所有包含关键词的或状态相同的或包含指定tag的issue，页码默认为1
+5. reopen：`重开issue#${issue标题或id}` 将一个issue的状态设置为`Open`
+6. all：`全部issue#${页码，选填}` 查询所有issue，页码默认为1
+7. newtag：`添加tag#${issue标题或id}#${tag内容}` 为issue添加一个tag
+8. assign：`指派#${issue标题或id}#${@群员或输入qq号}` 为issue指派群员
+9. view：`查看issue#${issue标题或id}` 查看一个issue的详细信息
+10. deltag：`删除tag#${issue标题或id}#${tag内容}` 为issue删除一个tag
+11. unassign：`取消指派#${issue标题或id}#${@群员或输入qq号}` 为issue取消指派群员
+
 ## 扩展设置
 打开`config.yml`，下面依次介绍：
 ```yml
