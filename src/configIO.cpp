@@ -63,19 +63,22 @@ void printDefaultConfig() {
 }
 
 void printDefaultKeywords() {
-    json data;
-    
-    data["keywords"].push_back("请问");
-    data["keywords"].push_back("问一下");
-    data["keywords"].push_back("提问");
-    data["keywords"].push_back("怎么办");
-    data["keywords"].push_back("怎么用");
-    data["keywords"].push_back("怎么弄");
-    data["keywords"].push_back("怎么搞");
+    string json = ansi(dir::app()+"keywords.json");
+    if(_access(json.c_str(),0)!=0) {
+        json data;
+        
+        data["keywords"].push_back("请问");
+        data["keywords"].push_back("问一下");
+        data["keywords"].push_back("提问");
+        data["keywords"].push_back("怎么办");
+        data["keywords"].push_back("怎么用");
+        data["keywords"].push_back("怎么弄");
+        data["keywords"].push_back("怎么搞");
 
-    ofstream os(ansi(dir::app()+"keywords.json"));
-    os << data.dump(4) << endl;
-    os.close();
+        ofstream os(ansi(dir::app()+"keywords.json"));
+        os << data.dump(4) << endl;
+        os.close();
+    }
 }
 
 void printFiles() {
