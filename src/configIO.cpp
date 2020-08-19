@@ -63,8 +63,8 @@ void printDefaultConfig() {
 }
 
 void printDefaultKeywords() {
-    string json = ansi(dir::app()+"keywords.json");
-    if(_access(json.c_str(),0)!=0) {
+    string jsondir = ansi(dir::app()+"keywords.json");
+    if(_access(jsondir.c_str(),0)!=0) {
         json data;
         
         data["keywords"].push_back("请问");
@@ -75,7 +75,7 @@ void printDefaultKeywords() {
         data["keywords"].push_back("怎么弄");
         data["keywords"].push_back("怎么搞");
 
-        ofstream os(ansi(dir::app()+"keywords.json"));
+        ofstream os(jsondir);
         os << data.dump(4) << endl;
         os.close();
     }
