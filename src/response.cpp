@@ -336,7 +336,7 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
 
         for(int i=1; i<=perpage; i++) {
             int num=(page-1)*perpage+i;
-            if(num>=number)break;
+            if(num>number)break;
             json issue=data["issue"+to_string(num)];
             Message msg=config["reply"]["searcheach"].as<string>();
             msg=replace_all_distinct(msg,"${title}",issue["title"].get<string>());
