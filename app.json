@@ -3,8 +3,8 @@
     "ret": 1,
     "apiver": 9,
     "name": "issuebot",
-    "version": "1.0.1",
-    "version_id": 2,
+    "version": "1.0.2",
+    "version_id": 3,
     "author": "Bill Yang",
     "description": "在群聊里进行issue交互吧！",
     "event": [

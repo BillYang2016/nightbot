@@ -53,14 +53,34 @@ void printDefaultConfig() {
         config["reply"]["searcheach"]="- ${title} (#${id}) [${status}] ${tags}";
         config["reply"]["view_perpage"]=3;
         config["reply"]["search_perpage"]=5;
+        config["detect"]["enable"]="false";
+        config["detect"]["limit"]=60;
+        config["detect"]["reply"]="${at}为您找到最为匹配的issue，匹配度${score}：\n${title} (#${id}) [${status}]\n${content}\n请输入\"查看issue#${id}\"以获取详细信息！";
         ofstream osy(yml);
         osy<<config;
         osy.close();
     }
 }
 
+void printDefaultKeywords() {
+    json data;
+    
+    data["keywords"].push_back("请问");
+    data["keywords"].push_back("问一下");
+    data["keywords"].push_back("提问");
+    data["keywords"].push_back("怎么办");
+    data["keywords"].push_back("怎么用");
+    data["keywords"].push_back("怎么弄");
+    data["keywords"].push_back("怎么搞");
+
+    ofstream os(ansi(dir::app()+"keywords.json"));
+    os << data.dump(4) << endl;
+    os.close();
+}
+
 void printFiles() {
     printDefaultConfig();
+    printDefaultKeywords();
 }
 
 void readCommands() {

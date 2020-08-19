@@ -201,12 +201,14 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
             transform(status.begin(),status.end(),status.begin(),::tolower);
 
             bool find=0; //包含tag
-            json tags=issue["tags"];
+            try {
+                json tags=issue["tags"];
 
-            for(string tag:issue["tags"]) {
-                transform(tag.begin(),tag.end(),tag.begin(),::tolower);
-                if(tag==cmd[1]) {find=1;break;}
-            }
+                for(string tag:issue["tags"]) {
+                    transform(tag.begin(),tag.end(),tag.begin(),::tolower);
+                    if(tag==cmd[1]) {find=1;break;}
+                }
+            } catch (nlohmann::detail::type_error &err) {} //不存在，忽略
 
             if(find || title.find(cmd[1])!=string::npos || status.find(cmd[1])!=string::npos) { //包含tag或者包含标题或者包含状态
                 Message msg=config["reply"]["searcheach"].as<string>();
@@ -214,7 +216,9 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
                 msg=replace_all_distinct(msg,"${id}",to_string(issue["id"].get<int>()));
                 msg=replace_all_distinct(msg,"${status}",issue["status"].get<string>());
                 string tags;
-                for(string tag:issue["tags"])tags+="["+tag+"] ";
+                try {
+                    for(string tag:issue["tags"])tags+="["+tag+"] ";
+                } catch (nlohmann::detail::type_error &err) {} //不存在，忽略
                 msg=replace_all_distinct(msg,"${tags}",tags);
                 issues.push_back(msg);
             }
@@ -339,7 +343,9 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
             msg=replace_all_distinct(msg,"${id}",to_string(issue["id"].get<int>()));
             msg=replace_all_distinct(msg,"${status}",issue["status"].get<string>());
             string tags;
-            for(string tag:issue["tags"])tags+="["+tag+"] ";
+            try {
+                for(string tag:issue["tags"])tags+="["+tag+"] ";
+            } catch (nlohmann::detail::type_error &err) {} //不存在，忽略
             msg=replace_all_distinct(msg,"${tags}",tags);
             searcheach+=msg+"\n";
         }
@@ -364,10 +370,12 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
 
         json issue=data["issue"+to_string(id)];
 
-        for(auto it=issue["tags"].begin(); it!=issue["tags"].end(); it++)if(*it==cmd[2]) {
-            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"该tag已存在！");
-            return false;
-        }
+        try {
+            for(auto it=issue["tags"].begin(); it!=issue["tags"].end(); it++)if(*it==cmd[2]) {
+                send_group_message(event.group_id,MessageSegment::at(event.user_id)+"该tag已存在！");
+                return false;
+            }
+        } catch (nlohmann::detail::type_error &err) {} //不存在，忽略
 
         int floors=issue["floors"].get<int>()+1;
         issue["floors"]=floors;
@@ -415,10 +423,12 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
 
         json issue=data["issue"+to_string(id)];
 
-        for(auto it=issue["assignees"].begin(); it!=issue["assignees"].end(); it++)if(*it==qqid) {
-            send_group_message(event.group_id,MessageSegment::at(event.user_id)+"该assignee已存在！");
-            return false;
-        }
+        try {
+            for(auto it=issue["assignees"].begin(); it!=issue["assignees"].end(); it++)if(*it==qqid) {
+                send_group_message(event.group_id,MessageSegment::at(event.user_id)+"该assignee已存在！");
+                return false;
+            }
+        } catch (nlohmann::detail::type_error &err) {} //不存在，忽略
 
         int floors=issue["floors"].get<int>()+1;
         issue["floors"]=floors;
@@ -483,15 +493,19 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
         reply=replace_all_distinct(reply,"${pagenum}",to_string(page)+"/"+to_string(pages));
 
         string tags,assignees;
-        for(string tag:issue["tags"])tags+="["+tag+"] ";
+        try {
+            for(string tag:issue["tags"])tags+="["+tag+"] ";
+        } catch (nlohmann::detail::type_error &err) {} //不存在，忽略
 
         reply=replace_all_distinct(reply,"${tags}",tags);
 
-        for(int64_t qqid:issue["assignees"]) {
-            GroupMember gm=get_group_member_info(issue["group"].get<int64_t>(),qqid);
-            if(gm.card=="")assignees+=gm.nickname+"("+to_string(gm.user_id)+") ";
-            else assignees+=gm.card+"("+to_string(gm.user_id)+") ";
-        }
+        try {
+            for(int64_t qqid:issue["assignees"]) {
+                GroupMember gm=get_group_member_info(issue["group"].get<int64_t>(),qqid);
+                if(gm.card=="")assignees+=gm.nickname+"("+to_string(gm.user_id)+") ";
+                else assignees+=gm.card+"("+to_string(gm.user_id)+") ";
+            }
+        } catch (nlohmann::detail::type_error &err) {} //不存在，忽略
 
         reply=replace_all_distinct(reply,"${assignees}",assignees);
 
@@ -531,11 +545,13 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
         json issue=data["issue"+to_string(id)];
 
         bool flag=0;
-        for(auto it=issue["tags"].begin(); it!=issue["tags"].end(); it++)if(*it==cmd[2]) {
-            flag=1;
-            issue["tags"].erase(it);
-            break;
-        }
+        try {
+            for(auto it=issue["tags"].begin(); it!=issue["tags"].end(); it++)if(*it==cmd[2]) {
+                flag=1;
+                issue["tags"].erase(it);
+                break;
+            }
+        } catch (nlohmann::detail::type_error &err) {} //不存在，忽略
 
         if(flag==0) {
             send_group_message(event.group_id,MessageSegment::at(event.user_id)+"不存在该tag！");
@@ -588,11 +604,13 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
         json issue=data["issue"+to_string(id)];
 
         bool flag=0;
-        for(auto it=issue["assignees"].begin(); it!=issue["assignees"].end(); it++)if(*it==qqid) {
-            flag=1;
-            issue["assignees"].erase(it);
-            break;
-        }
+        try {
+            for(auto it=issue["assignees"].begin(); it!=issue["assignees"].end(); it++)if(*it==qqid) {
+                flag=1;
+                issue["assignees"].erase(it);
+                break;
+            }
+        } catch (nlohmann::detail::type_error &err) {} //不存在，忽略
 
         if(flag==0) {
             send_group_message(event.group_id,MessageSegment::at(event.user_id)+"不存在该成员！");

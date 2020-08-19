@@ -5,6 +5,7 @@
 #include "stringextend.hpp"
 #include "configIO.hpp"
 #include "response.hpp"
+#include "detect.hpp"
 
 extern string names[COMMAND_AMOUNT+1];
 extern string commands[COMMAND_AMOUNT+1];
@@ -60,6 +61,25 @@ CQ_INIT {
             else Response(commandid,event);
             return;
         }
+
+        if(config["detect"]["enable"].as<string>()=="false")return;
+
+        json data;
+        try { //读取数据
+            ifstream jsonFile(ansi(dir::app()+"keywords.json"));
+            data=json::parse(jsonFile);
+        } catch (ApiError &err) {
+            logging::warning("加载数据","读取数据失败！错误码："+to_string(err.code));
+            return;
+        }
+
+        for(string x:data["keywords"])
+            if(event.message.find(x)!=string::npos) {
+                get_similar_issue(event,config["detect"]["limit"].as<int>(),0);
+                return;
+            }
+        
+        get_similar_issue(event,config["detect"]["limit"].as<int>(),1);
 
     });
 

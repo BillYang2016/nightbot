@@ -22,7 +22,7 @@
 附加功能：
 1. 自动同意好友请求
 2. 将issue的实时进展私聊推送给所有参与者
-3. 实时监测群聊消息，识别提问自动反馈匹配程度最高issue（未完成）
+3. 实时监测群聊消息，识别提问自动反馈匹配程度最高issue（测试中，现方案为lcs，后续进行优化）
 
 ## 插件使用
 ~~由于本插件尚未加入GUI，所以~~请在应用目录（CoolQ/data/app/com.billyang.issuebot/）内进行应用配置：  
@@ -106,13 +106,17 @@ notification: # 修改此项可修改插件的私聊推送内容
   deltag: "${author}为${group}群的issue删除了标签！\n${title} (#${id})\n${content}\n时间：${time}"
   assign: "${author}为${group}群的issue添加了指派！\n${title} (#${id})\n${content}\n时间：${time}"
   unassign: "${author}为${group}群的issue取消了指派！\n${title} (#${id})\n${content}\n时间：${time}"
-reply:
+reply: # 命令回复
   view: "${at}\n${title} (#${id}) [${status}] (${pagenum}页)\nTags: ${tags}\nAssignees: ${assignees}\n----------\n${vieweach}" # ${at}：@发送指令的人，${status}：Open还是Closed，${pagenum}：当前页码/页数（1/3），${tags}：所有tag，${assignees}：所有assignee（显示昵称和qq号），${vieweach}：所有issue内容，每一条的格式见下面的vieweach
   search: "${at}\n找到以下issue：(${pagenum}页)\n${searcheach}" # ${searcheach}：所有search结果，每一条的格式见下面的searcheach
   vieweach: "${content}\n作者：${author}\n时间：${time}\n----------"
   searcheach: "- ${title} (#${id}) [${status}] ${tags}"
   view_perpage: 3 # 每一页显示多少层（多了容易被吞）
   search_perpage: 5 # 每一页显示多少个结果（多了容易被吞）
+detect:
+  enable: false # 改成true启用自动监测反馈相似issue
+  limit: 60 # 相似度>=limit%将反馈相似issue，另外如果消息中出现了keywords.json中的词，无论相似度如何都会进行反馈
+  reply: "${at}为您找到最为匹配的issue，匹配度${score}：\n${title} (#${id}) [${status}]\n${content}\n请输入\"查看issue#${id}\"以获取详细信息！" # 支持${at}、${title}、${id}、${status}、${content}、${author}、${time}、${score}、${tags}，其中${content}、${author}、${time}均为第一层
 ```
 
 ## 插件构建
