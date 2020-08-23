@@ -13,7 +13,7 @@ void commands_init() {
 	names[2]="reply",commands[2]="回复issue",match_method[2]=1,priority_requied[2]=0;
 	names[3]="search",commands[3]="搜索issue",match_method[3]=1,priority_requied[3]=0;
 	names[4]="reopen",commands[4]="重开issue",match_method[4]=1,priority_requied[4]=1;
-	names[5]="all",commands[5]="全部issue",match_method[5]=0,priority_requied[5]=0;
+	names[5]="all",commands[5]="全部issue",match_method[5]=1,priority_requied[5]=0;
 	names[6]="newtag",commands[6]="添加tag",match_method[6]=1,priority_requied[6]=1;
 	names[7]="assign",commands[7]="指派",match_method[7]=1,priority_requied[7]=2;
 	names[8]="view",commands[8]="查看issue",match_method[8]=1,priority_requied[8]=0;
