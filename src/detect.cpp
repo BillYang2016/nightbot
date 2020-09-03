@@ -107,12 +107,11 @@ bool get_similar_issue(const GroupMessageEvent &event,int limit,bool search=0) {
 
     for(int i=1; i<=number; i++) {
         json issue=data["issue"+to_string(i)];
-        string title=issue["title"],content=issue["floor1"]["content"];
+        string title=issue["title"];
         if(min(title.length(),msg.length())==0)continue;
-        double titlescore=100.0*lcs(title,msg)/(min(title.length(),msg.length())),contentscore=100.0*lcs(content,msg)/(min(content.length(),msg.length()));
-        if(min(title.length(),msg.length())<=15)titlescore*=2.0/3;
-        if(min(content.length(),msg.length())<=15)contentscore*=2.0/3; //长度过小，给一个缩水比例
-        double score=max(titlescore,contentscore);
+        double titlescore=100.0*lcs(title,msg)/(min(title.length(),msg.length()));
+        if(min(title.length(),msg.length())<=15)continue; //长度过小
+        double score=titlescore;
         if(asking)score+=5;
         if(score>Maxscore) {
             Maxscore=score;
