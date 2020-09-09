@@ -86,6 +86,8 @@ bool get_similar_issue(const GroupMessageEvent &event,int limit,bool search=0) {
 
     string msg=event.message;
 
+    if(msg.find("http")!=string::npos || msg.find("https")!=string::npos)return false; //不检测链接
+
     if(msg.find("为什么")!=string::npos||msg.find("？")!=string::npos||msg.find("?")!=string::npos) {
         msg=replace_all_distinct(msg,"为什么","");
         msg=replace_all_distinct(msg,"？","");
