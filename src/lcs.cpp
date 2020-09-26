@@ -4,7 +4,7 @@
 
 int f[2005][2005];
 
-int lcs(const string &a,const string &b) {
+int lcs(const wstring &a,const wstring &b) {
     if(a.length()>2000||b.length()>2000)return 0;
     memset(f,0,sizeof(f));
     for(int i=1; i<=a.length(); i++)

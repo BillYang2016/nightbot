@@ -88,6 +88,8 @@ bool get_similar_issue(const GroupMessageEvent &event,int limit,bool search=0) {
 
     if(msg.find("http")!=string::npos || msg.find("https")!=string::npos)return false; //不检测链接
 
+    if(msg.find("xml")!=string::npos || msg.find("json")!=string::npos)return false; //不检测富文本
+
     if(msg.find("为什么")!=string::npos||msg.find("？")!=string::npos||msg.find("?")!=string::npos) {
         msg=replace_all_distinct(msg,"为什么","");
         msg=replace_all_distinct(msg,"？","");
@@ -110,9 +112,9 @@ bool get_similar_issue(const GroupMessageEvent &event,int limit,bool search=0) {
     for(int i=1; i<=number; i++) {
         json issue=data["issue"+to_string(i)];
         string title=issue["title"];
-        if(min(title.length(),msg.length())==0)continue;
-        double titlescore=100.0*lcs(title,msg)/(min(title.length(),msg.length()));
-        if(min(title.length(),msg.length())<=15)continue; //长度过小
+        wstring wa=cq::utils::s2ws(title),wb=cq::utils::s2ws(msg);
+        if(min(wa.length(),wb.length())<=5)continue; //长度过小
+        double titlescore=100.0*lcs(wa,wb)/(min(wa.length(),wb.length()));
         double score=titlescore;
         if(asking)score+=5;
         if(score>Maxscore) {

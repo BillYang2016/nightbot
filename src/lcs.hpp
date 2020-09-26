@@ -2,4 +2,4 @@
 
 #include <sstream>
 
-int lcs(const string &a,const string &b);
+int lcs(const wstring &a,const wstring &b);
