@@ -172,8 +172,8 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
                 if(difsecs>86400) {
                     msg=config["night_without_morning"].as<string>();
                 } else {
-                    int hours=(int)difsecs/1440;
-                    int minutes=((int)difsecs-hours*1440)/60;
+                    int hours=(int)difsecs/3600;
+                    int minutes=((int)difsecs-hours*3600)/60;
                     int seconds=(int)difsecs%60;
                     msg=replace_all_distinct(msg,"${time_day}",to_string(hours)+"时"+to_string(minutes)+"分"+to_string(seconds)+"秒");
                 }
@@ -240,8 +240,8 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
                 if(difsecs>86400) {
                     msg=config["morning_without_night"].as<string>();
                 } else {
-                    int hours=(int)difsecs/1440;
-                    int minutes=((int)difsecs-hours*1440)/60;
+                    int hours=(int)difsecs/3600;
+                    int minutes=((int)difsecs-hours*3600)/60;
                     int seconds=(int)difsecs%60;
                     msg=replace_all_distinct(msg,"${time_day}",to_string(hours)+"时"+to_string(minutes)+"分"+to_string(seconds)+"秒");
                 }
@@ -288,11 +288,11 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
             msg=replace_all_distinct(msg,"${number_awake}",to_string(day_counts));
             long long night_sum=data[to_string(event.user_id)]["night_sum"].get<long long>(),day_sum=data[to_string(event.user_id)]["day_sum"].get<long long>();
             double night_secs=(double)night_sum/night_counts,day_secs=(double)day_sum/day_counts;
-            int night_hours=(int)night_secs/1440;
-            int night_minutes=((int)night_secs-night_hours*1440)/60;
+            int night_hours=(int)night_secs/3600;
+            int night_minutes=((int)night_secs-night_hours*3600)/60;
             int night_seconds=(int)night_secs%60;
-            int day_hours=(int)day_secs/1440;
-            int day_minutes=((int)day_secs-day_hours*1440)/60;
+            int day_hours=(int)day_secs/3600;
+            int day_minutes=((int)day_secs-day_hours*3600)/60;
             int day_seconds=(int)day_secs%60;
             msg=replace_all_distinct(msg,"${avg_sleep}",to_string(night_hours)+"时"+to_string(night_minutes)+"分"+to_string(night_seconds)+"秒");
             msg=replace_all_distinct(msg,"${avg_wake}",to_string(day_hours)+"时"+to_string(day_minutes)+"分"+to_string(day_seconds)+"秒");
