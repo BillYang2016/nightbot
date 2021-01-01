@@ -138,13 +138,13 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
             night_ranking=0;
         }
 
-        night_ranking++;
-
         try {
             if(lastyear==nowyear && lastmonth==nowmonth && lastday==nowday) { //今天已经晚安过了
                 send_group_message(event.group_id,MessageSegment::at(event.user_id)+"您今天已经晚安过啦！");
                 logging::info("晚安",to_string(event.user_id)+"重复晚安");
             } else {
+                night_ranking++;
+
                 ofstream os(ansi(dir::app()+"groups\\"+to_string(event.group_id)+".json"));
                 json user=data[to_string(event.user_id)];
                 user["night_lasttime"]=time(NULL);
@@ -206,13 +206,13 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
             day_ranking=0;
         }
 
-        day_ranking++;
-
         try {
             if(lastyear==nowyear && lastmonth==nowmonth && lastday==nowday) { //今天已经早安过了
                 send_group_message(event.group_id,MessageSegment::at(event.user_id)+"您今天已经早安过啦！");
                 logging::info("早安",to_string(event.user_id)+"重复早安");
             } else {
+                day_ranking++;
+
                 ofstream os(ansi(dir::app()+"groups\\"+to_string(event.group_id)+".json"));
                 json user=data[to_string(event.user_id)];
                 user["day_lasttime"]=time(NULL);
