@@ -2,11 +2,11 @@
     "$schema": "https://awesome.cqp.moe/schema/app/v9/app-schema.json",
     "ret": 1,
     "apiver": 9,
-    "name": "issuebot",
-    "version": "1.0.4",
-    "version_id": 5,
+    "name": "nightbot",
+    "version": "1.0.0",
+    "version_id": 1,
     "author": "Bill Yang",
-    "description": "在群聊里进行issue交互吧！",
+    "description": "晚安~",
     "event": [
         {
             "id": 1003,

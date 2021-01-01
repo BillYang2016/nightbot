@@ -5,16 +5,16 @@
 #include "stringextend.hpp"
 #include "configIO.hpp"
 #include "response.hpp"
-#include "detect.hpp"
 
 extern string names[COMMAND_AMOUNT+1];
-extern string commands[COMMAND_AMOUNT+1];
+extern vector<string> commands[COMMAND_AMOUNT+1];
+extern string reply[COMMAND_AMOUNT+1];
 extern int match_method[COMMAND_AMOUNT+1]; //1模糊 0精确
 extern int priority_requied[COMMAND_AMOUNT+1]; //0全体成员 1管理员或发起者 2仅管理员
 
 CQ_INIT {
     on_enable([] { 
-        logging::info("启用", "issuebot已启用");
+        logging::info("启用", "nightbot已启用");
         commands_init();
         printFiles();
         readCommands();
@@ -43,15 +43,19 @@ CQ_INIT {
 
         for(int i=0; i<COMMAND_AMOUNT; i++) { //判断触发命令
             int meth=match_method[i];
-            string command=commands[i];
             int prio=priority_requied[i];
             bool flag=0; //是否匹配
 
-            if(meth==0)flag=command==event.message;
-            else flag=event.message.find(command)!=string::npos;
-            if(!flag)continue;
+            for(string command:commands[i]) {
+                if(meth==0)flag=command==event.message;
+                else flag=event.message.find(command)!=string::npos;
+                if(flag)break;
+            }
 
-            if(commandid==-1||command.length()>commands[commandid].length())commandid=i; //挑选触发的最长命令
+            if(flag) {
+                commandid=i;
+                break;
+            }
         }
 
         if(~commandid) {
@@ -62,36 +66,5 @@ CQ_INIT {
             return;
         }
 
-        if(config["detect"]["enable"].as<string>()=="false")return;
-
-        json data;
-        try { //读取数据
-            ifstream jsonFile(ansi(dir::app()+"keywords.json"));
-            data=json::parse(jsonFile);
-        } catch (ApiError &err) {
-            logging::warning("加载数据","读取数据失败！错误码："+to_string(err.code));
-            return;
-        }
-
-        for(string x:data["keywords"])
-            if(event.message.find(x)!=string::npos) {
-                get_similar_issue(event,config["detect"]["limit"].as<int>(),0);
-                return;
-            }
-        
-        get_similar_issue(event,config["detect"]["limit"].as<int>(),1);
-
-    });
-
-    on_friend_request([](const FriendRequestEvent &event) {
-        string yml = ansi(dir::app()+"config.yml");
-        node config;
-        try { //读取配置
-            config = YAML::LoadFile(yml);
-        } catch (ApiError &err) {
-            logging::warning("加载数据","读取配置失败！错误码："+to_string(err.code));
-        }
-        if(config["friendrequest"].as<int>()==0)return; //忽略
-        set_friend_request(event.flag,RequestEvent::Operation::APPROVE); //自动同意好友请求
     });
 }

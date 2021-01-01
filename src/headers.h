@@ -21,7 +21,7 @@ using namespace std;
 using Message = cq::message::Message;
 using MessageSegment = cq::message::MessageSegment;
 
-#define COMMAND_AMOUNT 11
+#define COMMAND_AMOUNT 4
 
 #define HEADERS
 
