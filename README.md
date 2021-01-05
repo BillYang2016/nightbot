@@ -65,7 +65,7 @@ command:
     reply: ${at}你睡觉了${number_asleep}次，起床了${number_awake}次，平均在${avg_sleep}睡觉，平均在${avg_wake}起床。 # 回复方式：${number_asleep}为已经晚安过的人数，${number_awake}为已经早安过的人数，${avg_sleep}为个人平均睡觉时间，${avg_wake}为个人平均起床时间
 night_without_morning: ${at}晚安哦，您是今天第${ranking}个睡觉的群友~ # 在没有早安数据时晚安的回复，此处也可使用${call}
 morning_without_night: ${at}早上好，您是今天第${ranking}个起床的群友~ # 在没有晚安数据时早安的回复，此处也可使用${call}
-call: # 性别化称呼
+call: # 性别化称呼（目前处于失效状态）
   males: 少年
   females: 少女
   default: 少女

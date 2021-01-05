@@ -36,9 +36,18 @@ void printDefaultConfig() {
         }
         config["night_without_morning"]="${at}晚安哦，您是今天第${ranking}个睡觉的群友~";
         config["morning_without_night"]="${at}早上好，您是今天第${ranking}个起床的群友~";
+        config["multi"]["morning"]="${at}您今天已经早安过了哦~";
+        config["multi"]["night"]="${at}您今天已经晚安过了哦~";
+        config["out_of_time_period"]["morning"]="${at}您不在早安时间区间内哦，允许早安时间：${start_time}时~${end_time}时。";
+        config["out_of_time_period"]["night"]="${at}您不在晚安时间区间内哦，允许晚安时间：${start_time}时~${end_time}时。";
         config["call"]["males"]="少年";
         config["call"]["females"]="少女";
         config["call"]["default"]="少女";
+        config["time"]["start_hour"]=6;
+        config["time"]["morning"]["accept_start_hour"]=0;
+        config["time"]["morning"]["accept_end_hour"]=24;
+        config["time"]["night"]["accept_start_hour"]=0;
+        config["time"]["night"]["accept_end_hour"]=24;
         ofstream osy(yml);
         osy<<config;
         osy.close();

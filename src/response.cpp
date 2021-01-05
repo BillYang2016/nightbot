@@ -14,6 +14,121 @@ int night_ranking=0,day_ranking=0,running_day=-1;
 
 extern int64_t get_number_by_string(const string &s); //提取字符串中的数字
 
+bool get_ranking(const GroupMessageEvent &event) {
+    json data;
+    try { //读取数据
+        ifstream jsonFile(ansi(dir::app()+"groups\\"+to_string(event.group_id)+".json"));
+        data=json::parse(jsonFile);
+    } catch (ApiError &err) {
+        logging::warning("加载数据","读取数据失败！错误码："+to_string(err.code));
+        return false;
+    } catch (nlohmann::detail::parse_error &err) { //json不存在
+        logging::info("加载数据","json数据不存在，重新创建");
+        _mkdir(ansi(dir::app()+"groups\\").c_str());
+        ofstream os(ansi(dir::app()+"groups\\"+to_string(event.group_id)+".json"));
+        data["readme"]="Do not modify this file unless you know what you're doing!"; //readme
+        os << data.dump(4) << endl;
+        os.close();
+    }
+
+    try { //读取早安排名
+        ifstream jsonFile(ansi(dir::app()+"groups\\"+to_string(event.group_id)+".json"));
+        data=json::parse(jsonFile);
+        day_ranking=data["day_ranking"].get<int>();
+    } catch (ApiError &err) {
+        logging::warning("加载数据","读取排名数据失败！错误码："+to_string(err.code));
+        return false;
+    } catch (nlohmann::detail::parse_error &err) { //json不存在
+        logging::info("加载数据","json数据不存在，重新创建");
+        _mkdir(ansi(dir::app()+"groups\\").c_str());
+        ofstream os(ansi(dir::app()+"groups\\"+to_string(event.group_id)+".json"));
+        data["readme"]="Do not modify this file unless you know what you're doing!"; //readme
+        os << data.dump(4) << endl;
+        os.close();
+        day_ranking=0;
+    } catch (nlohmann::detail::type_error &err) { //json没有ranking数据
+        logging::info("加载数据","json数据不存在");
+        day_ranking=0;
+    }
+
+    try { //读取晚安排名
+        ifstream jsonFile(ansi(dir::app()+"groups\\"+to_string(event.group_id)+".json"));
+        data=json::parse(jsonFile);
+        night_ranking=data["night_ranking"].get<int>();
+    } catch (ApiError &err) {
+        logging::warning("加载数据","读取排名数据失败！错误码："+to_string(err.code));
+        return false;
+    } catch (nlohmann::detail::parse_error &err) { //json不存在
+        logging::info("加载数据","json数据不存在，重新创建");
+        _mkdir(ansi(dir::app()+"groups\\").c_str());
+        ofstream os(ansi(dir::app()+"groups\\"+to_string(event.group_id)+".json"));
+        data["readme"]="Do not modify this file unless you know what you're doing!"; //readme
+        os << data.dump(4) << endl;
+        os.close();
+        night_ranking=0;
+    } catch (nlohmann::detail::type_error &err) { //json没有ranking数据
+        logging::info("加载数据","json数据不存在");
+        night_ranking=0;
+    }
+
+    return true;
+}
+
+bool clear_ranking(const GroupMessageEvent &event) {
+    json data;
+    try { //读取数据
+        ifstream jsonFile(ansi(dir::app()+"groups\\"+to_string(event.group_id)+".json"));
+        data=json::parse(jsonFile);
+    } catch (ApiError &err) {
+        logging::warning("加载数据","读取数据失败！错误码："+to_string(err.code));
+        return false;
+    } catch (nlohmann::detail::parse_error &err) { //json不存在
+        logging::info("加载数据","json数据不存在，重新创建");
+        _mkdir(ansi(dir::app()+"groups\\").c_str());
+        ofstream os(ansi(dir::app()+"groups\\"+to_string(event.group_id)+".json"));
+        data["readme"]="Do not modify this file unless you know what you're doing!"; //readme
+        os << data.dump(4) << endl;
+        os.close();
+    }
+
+    ofstream os(ansi(dir::app()+"groups\\"+to_string(event.group_id)+".json"));
+
+    data["day_ranking"]=data["night_ranking"]=day_ranking=night_ranking=0;
+
+    os << data.dump(4) << endl;
+    os.close();
+
+    return true;
+}
+
+bool increase_ranking(const int &type,const GroupMessageEvent &event) {
+    json data;
+    try { //读取数据
+        ifstream jsonFile(ansi(dir::app()+"groups\\"+to_string(event.group_id)+".json"));
+        data=json::parse(jsonFile);
+    } catch (ApiError &err) {
+        logging::warning("加载数据","读取数据失败！错误码："+to_string(err.code));
+        return false;
+    } catch (nlohmann::detail::parse_error &err) { //json不存在
+        logging::info("加载数据","json数据不存在，重新创建");
+        _mkdir(ansi(dir::app()+"groups\\").c_str());
+        ofstream os(ansi(dir::app()+"groups\\"+to_string(event.group_id)+".json"));
+        data["readme"]="Do not modify this file unless you know what you're doing!"; //readme
+        os << data.dump(4) << endl;
+        os.close();
+    }
+    
+    ofstream os(ansi(dir::app()+"groups\\"+to_string(event.group_id)+".json"));
+
+    if(type==0)data["night_ranking"]=++night_ranking;
+    else data["day_ranking"]=++day_ranking;
+
+    os << data.dump(4) << endl;
+    os.close();
+
+    return true;
+}
+
 bool get_data(const int &type,int &year,int &month,int &day,time_t &lastt,const GroupMessageEvent &event) {
     json data;
     try { //读取数据
@@ -123,6 +238,10 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
     msg=replace_all_distinct(msg,string(1,char(13)),"\n");
     msg=replace_all_distinct(msg,string(1,char(10)),"\n");
 
+    get_ranking(event); //缓存同步
+
+    int start_hour=config["time"]["start_hour"].as<int>();
+
     if(eventtype==0) { //晚安
         struct tm t;
         time_t night_lastt;
@@ -133,17 +252,27 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
         localtime_s(&t,&nowt);
         nowyear=t.tm_year,nowmonth=t.tm_mon,nowday=t.tm_mday;
 
-        if(nowday!=running_day&&t.tm_hour>=6) {
+        if(t.tm_hour<config["time"]["night"]["accept_start_hour"].as<int>()||t.tm_hour>config["time"]["night"]["accept_end_hour"].as<int>()) { //不在晚安区间
+            Message msg=config["out_of_time_period"]["night"].as<string>();
+            msg=replace_all_distinct(msg,"${at}",MessageSegment::at(event.user_id));
+            msg=replace_all_distinct(msg,"${start_time}",to_string(config["time"]["night"]["accept_start_hour"].as<int>()));
+            msg=replace_all_distinct(msg,"${start_time}",to_string(config["time"]["night"]["accept_end_hour"].as<int>()));
+            send_group_message(event.group_id,msg);
+        }
+
+        if(nowday!=running_day&&t.tm_hour>=start_hour) {
             running_day=nowday;
-            night_ranking=0;
+            clear_ranking(event);
         }
 
         try {
             if(lastyear==nowyear && lastmonth==nowmonth && lastday==nowday) { //今天已经晚安过了
-                send_group_message(event.group_id,MessageSegment::at(event.user_id)+"您今天已经晚安过啦！");
+                Message msg=config["multi"]["night"].as<string>();
+                msg=replace_all_distinct(msg,"${at}",MessageSegment::at(event.user_id));
+                send_group_message(event.group_id,msg);
                 logging::info("晚安",to_string(event.user_id)+"重复晚安");
             } else {
-                night_ranking++;
+                increase_ranking(0,event);
 
                 ofstream os(ansi(dir::app()+"groups\\"+to_string(event.group_id)+".json"));
                 json user=data[to_string(event.user_id)];
@@ -201,17 +330,27 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
         localtime_s(&t,&nowt);
         nowyear=t.tm_year,nowmonth=t.tm_mon,nowday=t.tm_mday;
 
-        if(nowday!=running_day&&t.tm_hour>=6) {
+        if(t.tm_hour<config["time"]["morning"]["accept_start_hour"].as<int>()||t.tm_hour>config["time"]["morning"]["accept_end_hour"].as<int>()) { //不在早安区间
+            Message msg=config["out_of_time_period"]["morning"].as<string>();
+            msg=replace_all_distinct(msg,"${at}",MessageSegment::at(event.user_id));
+            msg=replace_all_distinct(msg,"${start_time}",to_string(config["time"]["morning"]["accept_start_hour"].as<int>()));
+            msg=replace_all_distinct(msg,"${start_time}",to_string(config["time"]["morning"]["accept_end_hour"].as<int>()));
+            send_group_message(event.group_id,msg);
+        }
+
+        if(nowday!=running_day&&t.tm_hour>=start_hour) {
             running_day=nowday;
-            day_ranking=0;
+            clear_ranking(event);
         }
 
         try {
             if(lastyear==nowyear && lastmonth==nowmonth && lastday==nowday) { //今天已经早安过了
-                send_group_message(event.group_id,MessageSegment::at(event.user_id)+"您今天已经早安过啦！");
+                Message msg=config["multi"]["morning"].as<string>();
+                msg=replace_all_distinct(msg,"${at}",MessageSegment::at(event.user_id));
+                send_group_message(event.group_id,msg);
                 logging::info("早安",to_string(event.user_id)+"重复早安");
             } else {
-                day_ranking++;
+                increase_ranking(1,event);
 
                 ofstream os(ansi(dir::app()+"groups\\"+to_string(event.group_id)+".json"));
                 json user=data[to_string(event.user_id)];
@@ -267,10 +406,9 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
         localtime_s(&t,&nowt);
         nowyear=t.tm_year,nowmonth=t.tm_mon,nowday=t.tm_mday;
 
-        if(nowday!=running_day&&t.tm_hour>=6) {
+        if(nowday!=running_day&&t.tm_hour>=start_hour) {
             running_day=nowday;
-            day_ranking=0;
-            night_ranking=0;
+            clear_ranking(event);
         }
 
         Message msg=reply[2];
