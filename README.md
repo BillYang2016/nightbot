@@ -1,6 +1,6 @@
 # Night bot
 
-当前版本号：1.0.2
+当前版本号：1.0.3
 
 ## 联系方式
 [QQ群 735209171](https://jq.qq.com/?_wv=1027&k=5cV7uEJ)  
@@ -24,6 +24,9 @@
 4. 打开`config.yml`并在`groups`项输入启用群号，使用','进行分割
 5. 恭喜，插件可以正常运行啦！
 6. 如果控制台显示插件返回126报错，那么你可能需要安装VC运行库（vc_redist.x86）
+
+## 更新须知
+请在更新插件版本后，备份并删除`config.yml`，然后重启CoolQ/Mirai，插件会重新生成`config.yml`，请按照新的配置文件重新配置。
 
 ## 默认指令
 1. night: `晚安`
@@ -65,10 +68,24 @@ command:
     reply: ${at}你睡觉了${number_asleep}次，起床了${number_awake}次，平均在${avg_sleep}睡觉，平均在${avg_wake}起床。 # 回复方式：${number_asleep}为已经晚安过的人数，${number_awake}为已经早安过的人数，${avg_sleep}为个人平均睡觉时间，${avg_wake}为个人平均起床时间
 night_without_morning: ${at}晚安哦，您是今天第${ranking}个睡觉的群友~ # 在没有早安数据时晚安的回复，此处也可使用${call}
 morning_without_night: ${at}早上好，您是今天第${ranking}个起床的群友~ # 在没有晚安数据时早安的回复，此处也可使用${call}
+multi: # 重复早晚安回复
+  morning: ${at}您今天已经早安过了哦~
+  night: ${at}您今天已经晚安过了哦~
+out_of_time_period: # 不在早晚安时间区间回复
+  morning: ${at}您不在早安时间区间内哦，允许早安时间：${start_time}时~${end_time}时。
+  night: ${at}您不在晚安时间区间内哦，允许晚安时间：${start_time}时~${end_time}时。
 call: # 性别化称呼（目前处于失效状态）
   males: 少年
   females: 少女
   default: 少女
+time:
+  start_hour: 6 # 跨日时间（默认早上6点）
+  morning: # 允许早安区间（0~24时）
+    accept_start_hour: 0
+    accept_end_hour: 24
+  night: # 允许晚安区间（0~24时）
+    accept_start_hour: 0
+    accept_end_hour: 24
 ```
 
 ## 插件构建
