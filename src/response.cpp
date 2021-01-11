@@ -292,7 +292,7 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
 
         int accept_start_hour=config["time"]["night"]["accept_start_hour"].as<int>(),accept_end_hour=config["time"]["night"]["accept_end_hour"].as<int>();
 
-        if((accept_start_hour<accept_end_hour&&(t.tm_hour<accept_start_hour||t.tm_hour>accept_end_hour)) || (accept_start_hour>=accept_end_hour&&(t.tm_hour<accept_start_hour&&t.tm_hour>accept_end_hour))) { //不在晚安区间
+        if((accept_start_hour<accept_end_hour&&(t.tm_hour<accept_start_hour||t.tm_hour>=accept_end_hour)) || (accept_start_hour>=accept_end_hour&&(t.tm_hour<accept_start_hour&&t.tm_hour>=accept_end_hour))) { //不在晚安区间
             Message msg=config["out_of_time_period"]["night"].as<string>();
             msg=replace_all_distinct(msg,"${at}",MessageSegment::at(event.user_id));
             msg=replace_all_distinct(msg,"${start_time}",to_string(config["time"]["night"]["accept_start_hour"].as<int>()));
@@ -360,7 +360,7 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
 
         int accept_start_hour=config["time"]["morning"]["accept_start_hour"].as<int>(),accept_end_hour=config["time"]["morning"]["accept_end_hour"].as<int>();
 
-        if((accept_start_hour<accept_end_hour&&(t.tm_hour<accept_start_hour||t.tm_hour>accept_end_hour)) || (accept_start_hour>=accept_end_hour&&(t.tm_hour<accept_start_hour&&t.tm_hour>accept_end_hour))) { //不在早安区间
+        if((accept_start_hour<accept_end_hour&&(t.tm_hour<accept_start_hour||t.tm_hour>=accept_end_hour)) || (accept_start_hour>=accept_end_hour&&(t.tm_hour<accept_start_hour&&t.tm_hour>=accept_end_hour))) { //不在早安区间
             Message msg=config["out_of_time_period"]["morning"].as<string>();
             msg=replace_all_distinct(msg,"${at}",MessageSegment::at(event.user_id));
             msg=replace_all_distinct(msg,"${start_time}",to_string(config["time"]["morning"]["accept_start_hour"].as<int>()));
