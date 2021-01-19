@@ -287,6 +287,8 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
         clear_ranking(data,event);
     }
 
+    get_ranking(data,event); //再一次缓存同步
+
     if(eventtype==0) { //晚安
         get_data(0,lastyear,lastmonth,lastday,night_lastt,event);
 
@@ -298,6 +300,7 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
             msg=replace_all_distinct(msg,"${start_time}",to_string(config["time"]["night"]["accept_start_hour"].as<int>()));
             msg=replace_all_distinct(msg,"${start_time}",to_string(config["time"]["night"]["accept_end_hour"].as<int>()));
             send_group_message(event.group_id,msg);
+            return true;
         }
 
         try {
@@ -366,6 +369,7 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
             msg=replace_all_distinct(msg,"${start_time}",to_string(config["time"]["morning"]["accept_start_hour"].as<int>()));
             msg=replace_all_distinct(msg,"${start_time}",to_string(config["time"]["morning"]["accept_end_hour"].as<int>()));
             send_group_message(event.group_id,msg);
+            return true;
         }
 
         try {
