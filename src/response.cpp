@@ -328,7 +328,7 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
                 if(difsecs>86400) {
                     msg=config["night_without_morning"].as<string>();
                 } else {
-                    if(diffsecs<config["time"]["least_awake"].as<double>()*60*60) { //清醒时间太短
+                    if(difsecs<config["time"]["least_awake"].as<double>()*60*60) { //清醒时间太短
                         Message msg=config["short_inteval"]["night"].as<string>();
                         logging::info("晚安",to_string(event.user_id)+"清醒时间太短");
                         if(msg=="null")return true;
@@ -410,7 +410,7 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
                 if(difsecs>86400) {
                     msg=config["morning_without_night"].as<string>();
                 } else {
-                    if(diffsecs<config["time"]["least_asleep"].as<double>()*60*60) { //睡眠时间太短
+                    if(difsecs<config["time"]["least_asleep"].as<double>()*60*60) { //睡眠时间太短
                         Message msg=config["short_inteval"]["morning"].as<string>();
                         logging::info("早安",to_string(event.user_id)+"睡眠时间太短");
                         if(msg=="null")return true;

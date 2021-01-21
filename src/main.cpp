@@ -35,7 +35,7 @@ CQ_INIT {
 
         if(config["enable"].as<string>()!="true")return; //插件未启用
 
-        if(!(groups.size()==1&&groups.back()==1)) { //groups填写1全体启用（issue#1.1）
+        if(!(groups.size()==1&&groups.back()=="1")) { //groups填写1全体启用（issue#1.1）
             bool ENABLED=0;
             for(auto group:groups)if(group==to_string(event.group_id)) {ENABLED=1;break;}
             if (ENABLED == 0) return; // 不在启用的群中, 忽略
