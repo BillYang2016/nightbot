@@ -3,8 +3,8 @@
     "ret": 1,
     "apiver": 9,
     "name": "nightbot",
-    "version": "1.0.6",
-    "version_id": 7,
+    "version": "1.0.7",
+    "version_id": 8,
     "author": "Bill Yang",
     "description": "晚安~",
     "event": [

@@ -315,6 +315,7 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
 
                         msg=replace_all_distinct(msg,"${at}",MessageSegment::at(event.user_id));
                         send_group_message(event.group_id,msg);
+                        return true;
                     }
                     int hours=(int)difsecs/3600;
                     int minutes=((int)difsecs-hours*3600)/60;
@@ -397,6 +398,7 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
 
                         msg=replace_all_distinct(msg,"${at}",MessageSegment::at(event.user_id));
                         send_group_message(event.group_id,msg);
+                        return true;
                     }
 
                     int hours=(int)difsecs/3600;
