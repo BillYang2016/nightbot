@@ -301,26 +301,6 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
                 msg=replace_all_distinct(msg,"${at}",MessageSegment::at(event.user_id));
                 send_group_message(event.group_id,msg);
             } else {
-                increase_ranking(data,0,event);
-
-                ofstream os(ansi(dir::app()+"groups\\"+to_string(event.group_id)+".json"));
-                json user=data[to_string(event.user_id)];
-                user["night_lasttime"]=time(NULL);
-                try {
-                    user["night_counts"]=user["night_counts"].get<int>()+1;
-                } catch (nlohmann::detail::type_error &err) {
-                    user["night_counts"]=1;
-                }
-                try {
-                    user["night_sum"]=user["night_sum"].get<long long>()+t.tm_hour*3600+t.tm_min*60+t.tm_sec;
-                } catch (nlohmann::detail::type_error &err) {
-                    user["night_sum"]=t.tm_hour*3600+t.tm_min*60+t.tm_sec;
-                }
-
-                data[to_string(event.user_id)]=user;
-                os << data.dump(4) << endl;
-                os.close();
-
                 Message msg=reply[0];
                 
                 get_data(1,day_lastt,event);
@@ -341,6 +321,26 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
                     int seconds=(int)difsecs%60;
                     msg=replace_all_distinct(msg,"${time_day}",to_string(hours)+"时"+to_string(minutes)+"分"+to_string(seconds)+"秒");
                 }
+
+                increase_ranking(data,0,event);
+
+                ofstream os(ansi(dir::app()+"groups\\"+to_string(event.group_id)+".json"));
+                json user=data[to_string(event.user_id)];
+                user["night_lasttime"]=time(NULL);
+                try {
+                    user["night_counts"]=user["night_counts"].get<int>()+1;
+                } catch (nlohmann::detail::type_error &err) {
+                    user["night_counts"]=1;
+                }
+                try {
+                    user["night_sum"]=user["night_sum"].get<long long>()+t.tm_hour*3600+t.tm_min*60+t.tm_sec;
+                } catch (nlohmann::detail::type_error &err) {
+                    user["night_sum"]=t.tm_hour*3600+t.tm_min*60+t.tm_sec;
+                }
+
+                data[to_string(event.user_id)]=user;
+                os << data.dump(4) << endl;
+                os.close();
 
                 logging::info("晚安",to_string(event.user_id)+"成功晚安");
                 
@@ -383,26 +383,6 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
                 msg=replace_all_distinct(msg,"${at}",MessageSegment::at(event.user_id));
                 send_group_message(event.group_id,msg);
             } else {
-                increase_ranking(data,1,event);
-
-                ofstream os(ansi(dir::app()+"groups\\"+to_string(event.group_id)+".json"));
-                json user=data[to_string(event.user_id)];
-                user["day_lasttime"]=time(NULL);
-                try {
-                    user["day_counts"]=user["day_counts"].get<int>()+1;
-                } catch (nlohmann::detail::type_error &err) {
-                    user["day_counts"]=1;
-                }
-                try {
-                    user["day_sum"]=user["day_sum"].get<long long>()+t.tm_hour*3600+t.tm_min*60+t.tm_sec;
-                } catch (nlohmann::detail::type_error &err) {
-                    user["day_sum"]=t.tm_hour*3600+t.tm_min*60+t.tm_sec;
-                }
-
-                data[to_string(event.user_id)]=user;
-                os << data.dump(4) << endl;
-                os.close();
-
                 Message msg=reply[1];
                 
                 get_data(0,night_lastt,event);
@@ -424,6 +404,27 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
                     int seconds=(int)difsecs%60;
                     msg=replace_all_distinct(msg,"${time_day}",to_string(hours)+"时"+to_string(minutes)+"分"+to_string(seconds)+"秒");
                 }
+
+                
+                increase_ranking(data,1,event);
+
+                ofstream os(ansi(dir::app()+"groups\\"+to_string(event.group_id)+".json"));
+                json user=data[to_string(event.user_id)];
+                user["day_lasttime"]=time(NULL);
+                try {
+                    user["day_counts"]=user["day_counts"].get<int>()+1;
+                } catch (nlohmann::detail::type_error &err) {
+                    user["day_counts"]=1;
+                }
+                try {
+                    user["day_sum"]=user["day_sum"].get<long long>()+t.tm_hour*3600+t.tm_min*60+t.tm_sec;
+                } catch (nlohmann::detail::type_error &err) {
+                    user["day_sum"]=t.tm_hour*3600+t.tm_min*60+t.tm_sec;
+                }
+
+                data[to_string(event.user_id)]=user;
+                os << data.dump(4) << endl;
+                os.close();
 
                 logging::info("早安",to_string(event.user_id)+"成功早安");
                 
