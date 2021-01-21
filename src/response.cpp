@@ -296,6 +296,7 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
 
         if((accept_start_hour<accept_end_hour&&(t.tm_hour<accept_start_hour||t.tm_hour>=accept_end_hour)) || (accept_start_hour>=accept_end_hour&&(t.tm_hour<accept_start_hour&&t.tm_hour>=accept_end_hour))) { //不在晚安区间
             Message msg=config["out_of_time_period"]["night"].as<string>();
+            if(msg=="null")return true;
             msg=replace_all_distinct(msg,"${at}",MessageSegment::at(event.user_id));
             msg=replace_all_distinct(msg,"${start_time}",to_string(config["time"]["night"]["accept_start_hour"].as<int>()));
             msg=replace_all_distinct(msg,"${start_time}",to_string(config["time"]["night"]["accept_end_hour"].as<int>()));
@@ -306,9 +307,10 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
         try {
             if(lastyear==nowyear && lastmonth==nowmonth && lastday==nowday) { //今天已经晚安过了
                 Message msg=config["multi"]["night"].as<string>();
+                logging::info("晚安",to_string(event.user_id)+"重复晚安");
+                if(msg=="null")return true;
                 msg=replace_all_distinct(msg,"${at}",MessageSegment::at(event.user_id));
                 send_group_message(event.group_id,msg);
-                logging::info("晚安",to_string(event.user_id)+"重复晚安");
             } else {
                 increase_ranking(data,0,event);
 
@@ -330,6 +332,8 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
                 os << data.dump(4) << endl;
                 os.close();
 
+                logging::info("晚安",to_string(event.user_id)+"成功晚安");
+
                 Message msg=reply[0];
                 
                 int day_lstyear,day_lstmonth,day_lstday;
@@ -344,6 +348,8 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
                     int seconds=(int)difsecs%60;
                     msg=replace_all_distinct(msg,"${time_day}",to_string(hours)+"时"+to_string(minutes)+"分"+to_string(seconds)+"秒");
                 }
+                
+                if(msg=="null")return true;
 
                 msg=replace_all_distinct(msg,"${at}",MessageSegment::at(event.user_id));
                 msg=replace_all_distinct(msg,"${ranking}",to_string(night_ranking));
@@ -355,7 +361,6 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
                 msg=replace_all_distinct(msg,"${call}",call);
 
                 send_group_message(event.group_id,msg);
-                logging::info("晚安",to_string(event.user_id)+"成功晚安");
             }
         } catch (ApiError &err) {} //忽略错误
     } else if(eventtype==1) { //早安
@@ -365,6 +370,7 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
 
         if((accept_start_hour<accept_end_hour&&(t.tm_hour<accept_start_hour||t.tm_hour>=accept_end_hour)) || (accept_start_hour>=accept_end_hour&&(t.tm_hour<accept_start_hour&&t.tm_hour>=accept_end_hour))) { //不在早安区间
             Message msg=config["out_of_time_period"]["morning"].as<string>();
+            if(msg=="null")return true;
             msg=replace_all_distinct(msg,"${at}",MessageSegment::at(event.user_id));
             msg=replace_all_distinct(msg,"${start_time}",to_string(config["time"]["morning"]["accept_start_hour"].as<int>()));
             msg=replace_all_distinct(msg,"${start_time}",to_string(config["time"]["morning"]["accept_end_hour"].as<int>()));
@@ -375,9 +381,10 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
         try {
             if(lastyear==nowyear && lastmonth==nowmonth && lastday==nowday) { //今天已经早安过了
                 Message msg=config["multi"]["morning"].as<string>();
+                logging::info("早安",to_string(event.user_id)+"重复早安");
+                if(msg=="null")return true;
                 msg=replace_all_distinct(msg,"${at}",MessageSegment::at(event.user_id));
                 send_group_message(event.group_id,msg);
-                logging::info("早安",to_string(event.user_id)+"重复早安");
             } else {
                 increase_ranking(data,1,event);
 
@@ -399,6 +406,8 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
                 os << data.dump(4) << endl;
                 os.close();
 
+                logging::info("早安",to_string(event.user_id)+"成功早安");
+
                 Message msg=reply[1];
                 
                 int day_lstyear,day_lstmonth,day_lstday;
@@ -413,6 +422,8 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
                     int seconds=(int)difsecs%60;
                     msg=replace_all_distinct(msg,"${time_day}",to_string(hours)+"时"+to_string(minutes)+"分"+to_string(seconds)+"秒");
                 }
+                
+                if(msg=="null")return true;
 
                 msg=replace_all_distinct(msg,"${at}",MessageSegment::at(event.user_id));
                 msg=replace_all_distinct(msg,"${ranking}",to_string(day_ranking));
@@ -424,11 +435,12 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
                 msg=replace_all_distinct(msg,"${call}",call);
 
                 send_group_message(event.group_id,msg);
-                logging::info("早安",to_string(event.user_id)+"成功早安");
             }
         } catch (ApiError &err) {} //忽略错误
     } else if(eventtype==2) { //查询作息数据
         Message msg=reply[2];
+        if(msg=="null")return true;
+        
         msg=replace_all_distinct(msg,"${at}",MessageSegment::at(event.user_id));
         msg=replace_all_distinct(msg,"${number_asleep}",to_string(night_ranking));
         msg=replace_all_distinct(msg,"${number_awake}",to_string(day_ranking));
@@ -436,6 +448,8 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
         send_group_message(event.group_id,msg);
     } else if(eventtype==3) { //查询我的数据
         Message msg=reply[3];
+        if(msg=="null")return true;
+        
         try {
             msg=replace_all_distinct(msg,"${at}",MessageSegment::at(event.user_id));
             int night_counts=data[to_string(event.user_id)]["night_counts"].get<int>(),day_counts=data[to_string(event.user_id)]["day_counts"].get<int>();
