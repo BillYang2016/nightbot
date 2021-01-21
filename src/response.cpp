@@ -405,7 +405,6 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
                     msg=replace_all_distinct(msg,"${time_day}",to_string(hours)+"时"+to_string(minutes)+"分"+to_string(seconds)+"秒");
                 }
 
-                
                 increase_ranking(data,1,event);
 
                 ofstream os(ansi(dir::app()+"groups\\"+to_string(event.group_id)+".json"));
