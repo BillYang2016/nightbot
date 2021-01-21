@@ -1,6 +1,6 @@
 # Night bot
 
-当前版本号：1.0.5
+当前版本号：1.0.6
 
 ## 联系方式
 [QQ群 735209171](https://jq.qq.com/?_wv=1027&k=5cV7uEJ)  
@@ -38,7 +38,7 @@
 打开`config.yml`，下面依次介绍：
 ```yml
 enable: false # 改为true后 启用插件
-groups: 0 # 输入群号，使用','分割
+groups: 0 # 输入群号，使用','分割（填写'1'表示全体启用）
 admin: -1 # 所有者账号，可以填自己大号
 command:
   night: # 晚安的指令
@@ -74,6 +74,9 @@ multi: # 重复早晚安回复
 out_of_time_period: # 不在早晚安时间区间回复
   morning: ${at}您不在早安时间区间内哦，允许早安时间：${start_time}时~${end_time}时。
   night: ${at}您不在晚安时间区间内哦，允许晚安时间：${start_time}时~${end_time}时。
+short_inteval: # 过短的睡眠/清醒时间回复
+  morning: ${at}只睡这么会儿你不怕猝死？
+  night: ${at}睡你麻痹起来嗨！
 call: # 性别化称呼（目前处于失效状态）
   males: 少年
   females: 少女
@@ -86,6 +89,11 @@ time:
   night: # 允许晚安区间（0~24时）
     accept_start_hour: 0
     accept_end_hour: 24
+  least_asleep: 6 # 最少睡眠时间（时）
+  least_awake: 6 # 最少清醒时间（时）
+  cd: # 两次指令CD（时）
+    morning: 12
+    night: 12
 ```
 
 ## 插件构建

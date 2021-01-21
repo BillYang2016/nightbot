@@ -131,7 +131,7 @@ bool increase_ranking(json &data,const int &type,const GroupMessageEvent &event)
     return true;
 }
 
-bool get_data(const int &type,int &year,int &month,int &day,time_t &lastt,const GroupMessageEvent &event) {
+bool get_data(const int &type,time_t &lastt,const GroupMessageEvent &event) {
     json data;
     try { //读取数据
         ifstream jsonFile(ansi(dir::app()+"groups\\"+to_string(event.group_id)+".json"));
@@ -149,7 +149,6 @@ bool get_data(const int &type,int &year,int &month,int &day,time_t &lastt,const 
         os.close();
     }
     
-    struct tm t;
     if(type==0) { //晚安
         try { //读取晚安数据
             ifstream jsonFile(ansi(dir::app()+"groups\\"+to_string(event.group_id)+".json"));
@@ -157,8 +156,6 @@ bool get_data(const int &type,int &year,int &month,int &day,time_t &lastt,const 
             jsonFile.close();
             json user=data[to_string(event.user_id)];
             lastt=user["night_lasttime"].get<time_t>();
-            localtime_s(&t,&lastt);
-            year=t.tm_year,month=t.tm_mon,day=t.tm_mday;
         } catch (ApiError &err) {
             logging::warning("加载数据","读取签到数据失败！错误码："+to_string(err.code));
             return false;
@@ -170,13 +167,9 @@ bool get_data(const int &type,int &year,int &month,int &day,time_t &lastt,const 
             os << data.dump(4) << endl;
             os.close();
             lastt=1000000000;
-            localtime_s(&t,&lastt);
-            year=t.tm_year,month=t.tm_mon,day=t.tm_mday;
         } catch (nlohmann::detail::type_error &err) { //json没有用户晚安数据
             logging::info("加载数据","json数据不存在");
             lastt=1000000000;
-            localtime_s(&t,&lastt);
-            year=t.tm_year,month=t.tm_mon,day=t.tm_mday;
         }
     } else { //早安
         try { //读取早安数据
@@ -185,8 +178,6 @@ bool get_data(const int &type,int &year,int &month,int &day,time_t &lastt,const 
             jsonFile.close();
             json user=data[to_string(event.user_id)];
             lastt=user["day_lasttime"].get<time_t>();
-            localtime_s(&t,&lastt);
-            year=t.tm_year,month=t.tm_mon,day=t.tm_mday;
         } catch (ApiError &err) {
             logging::warning("加载数据","读取签到数据失败！错误码："+to_string(err.code));
             return false;
@@ -198,13 +189,9 @@ bool get_data(const int &type,int &year,int &month,int &day,time_t &lastt,const 
             os << data.dump(4) << endl;
             os.close();
             lastt=1000000000;
-            localtime_s(&t,&lastt);
-            year=t.tm_year,month=t.tm_mon,day=t.tm_mday;
         } catch (nlohmann::detail::type_error &err) { //json没有用户早安数据
             logging::info("加载数据","json数据不存在");
             lastt=1000000000;
-            localtime_s(&t,&lastt);
-            year=t.tm_year,month=t.tm_mon,day=t.tm_mday;
         }
     }
 
@@ -250,7 +237,7 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
 
     struct tm t;
     time_t night_lastt,day_lastt;
-    int lastyear,nowyear,lastmonth,nowmonth,lastday,nowday;
+    int nowyear,nowmonth,nowday;
     
     time_t nowt=time(NULL);
     localtime_s(&t,&nowt);
@@ -290,7 +277,7 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
     get_ranking(data,event); //再一次缓存同步
 
     if(eventtype==0) { //晚安
-        get_data(0,lastyear,lastmonth,lastday,night_lastt,event);
+        get_data(0,night_lastt,event);
 
         int accept_start_hour=config["time"]["night"]["accept_start_hour"].as<int>(),accept_end_hour=config["time"]["night"]["accept_end_hour"].as<int>();
 
@@ -305,7 +292,9 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
         }
 
         try {
-            if(lastyear==nowyear && lastmonth==nowmonth && lastday==nowday) { //今天已经晚安过了
+            double difsecs=difftime(nowt,night_lastt),cd=config["time"]["cd"]["night"].as<double>();
+
+            if(difsecs<cd*60*60) { //今天已经晚安过了（没有超过时限CD）
                 Message msg=config["multi"]["night"].as<string>();
                 logging::info("晚安",to_string(event.user_id)+"重复晚安");
                 if(msg=="null")return true;
@@ -332,22 +321,28 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
                 os << data.dump(4) << endl;
                 os.close();
 
-                logging::info("晚安",to_string(event.user_id)+"成功晚安");
-
                 Message msg=reply[0];
                 
-                int day_lstyear,day_lstmonth,day_lstday;
-                time_t day_lastt;
-                get_data(1,day_lstyear,day_lstmonth,day_lstday,day_lastt,event);
+                get_data(1,day_lastt,event);
                 double difsecs=difftime(nowt,day_lastt);
                 if(difsecs>86400) {
                     msg=config["night_without_morning"].as<string>();
                 } else {
+                    if(diffsecs<config["time"]["least_awake"].as<double>()*60*60) { //清醒时间太短
+                        Message msg=config["short_inteval"]["night"].as<string>();
+                        logging::info("晚安",to_string(event.user_id)+"清醒时间太短");
+                        if(msg=="null")return true;
+
+                        msg=replace_all_distinct(msg,"${at}",MessageSegment::at(event.user_id));
+                        send_group_message(event.group_id,msg);
+                    }
                     int hours=(int)difsecs/3600;
                     int minutes=((int)difsecs-hours*3600)/60;
                     int seconds=(int)difsecs%60;
                     msg=replace_all_distinct(msg,"${time_day}",to_string(hours)+"时"+to_string(minutes)+"分"+to_string(seconds)+"秒");
                 }
+
+                logging::info("晚安",to_string(event.user_id)+"成功晚安");
                 
                 if(msg=="null")return true;
 
@@ -364,7 +359,7 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
             }
         } catch (ApiError &err) {} //忽略错误
     } else if(eventtype==1) { //早安
-        get_data(1,lastyear,lastmonth,lastday,day_lastt,event);
+        get_data(1,day_lastt,event);
 
         int accept_start_hour=config["time"]["morning"]["accept_start_hour"].as<int>(),accept_end_hour=config["time"]["morning"]["accept_end_hour"].as<int>();
 
@@ -379,7 +374,9 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
         }
 
         try {
-            if(lastyear==nowyear && lastmonth==nowmonth && lastday==nowday) { //今天已经早安过了
+            double difsecs=difftime(nowt,day_lastt),cd=config["time"]["cd"]["morning"].as<double>();
+
+            if(difsecs<cd*60*60) { //今天已经早安过了（没有超过时限CD）
                 Message msg=config["multi"]["morning"].as<string>();
                 logging::info("早安",to_string(event.user_id)+"重复早安");
                 if(msg=="null")return true;
@@ -406,22 +403,29 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
                 os << data.dump(4) << endl;
                 os.close();
 
-                logging::info("早安",to_string(event.user_id)+"成功早安");
-
                 Message msg=reply[1];
                 
-                int day_lstyear,day_lstmonth,day_lstday;
-                time_t day_lastt;
-                get_data(0,day_lstyear,day_lstmonth,day_lstday,day_lastt,event);
-                double difsecs=difftime(nowt,day_lastt);
+                get_data(0,night_lastt,event);
+                double difsecs=difftime(nowt,night_lastt);
                 if(difsecs>86400) {
                     msg=config["morning_without_night"].as<string>();
                 } else {
+                    if(diffsecs<config["time"]["least_asleep"].as<double>()*60*60) { //睡眠时间太短
+                        Message msg=config["short_inteval"]["morning"].as<string>();
+                        logging::info("早安",to_string(event.user_id)+"睡眠时间太短");
+                        if(msg=="null")return true;
+
+                        msg=replace_all_distinct(msg,"${at}",MessageSegment::at(event.user_id));
+                        send_group_message(event.group_id,msg);
+                    }
+
                     int hours=(int)difsecs/3600;
                     int minutes=((int)difsecs-hours*3600)/60;
                     int seconds=(int)difsecs%60;
                     msg=replace_all_distinct(msg,"${time_day}",to_string(hours)+"时"+to_string(minutes)+"分"+to_string(seconds)+"秒");
                 }
+
+                logging::info("早安",to_string(event.user_id)+"成功早安");
                 
                 if(msg=="null")return true;
 

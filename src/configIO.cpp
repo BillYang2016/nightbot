@@ -40,6 +40,8 @@ void printDefaultConfig() {
         config["multi"]["night"]="${at}您今天已经晚安过了哦~";
         config["out_of_time_period"]["morning"]="${at}您不在早安时间区间内哦，允许早安时间：${start_time}时~${end_time}时。";
         config["out_of_time_period"]["night"]="${at}您不在晚安时间区间内哦，允许晚安时间：${start_time}时~${end_time}时。";
+        config["short_inteval"]["morning"]="${at}只睡这么会儿你不怕猝死？";
+        config["short_inteval"]["night"]="${at}睡你麻痹起来嗨！";
         config["call"]["males"]="少年";
         config["call"]["females"]="少女";
         config["call"]["default"]="少女";
@@ -48,6 +50,10 @@ void printDefaultConfig() {
         config["time"]["morning"]["accept_end_hour"]=24;
         config["time"]["night"]["accept_start_hour"]=0;
         config["time"]["night"]["accept_end_hour"]=24;
+        config["time"]["least_asleep"]=6;
+        config["time"]["least_awake"]=6;
+        config["time"]["cd"]["morning"]=12;
+        config["time"]["cd"]["night"]=12;
         ofstream osy(yml);
         osy<<config;
         osy.close();
