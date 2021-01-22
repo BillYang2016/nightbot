@@ -286,7 +286,7 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
             if(msg=="null")return true;
             msg=replace_all_distinct(msg,"${at}",MessageSegment::at(event.user_id));
             msg=replace_all_distinct(msg,"${start_time}",to_string(config["time"]["night"]["accept_start_hour"].as<int>()));
-            msg=replace_all_distinct(msg,"${start_time}",to_string(config["time"]["night"]["accept_end_hour"].as<int>()));
+            msg=replace_all_distinct(msg,"${end_time}",to_string(config["time"]["night"]["accept_end_hour"].as<int>()));
             send_group_message(event.group_id,msg);
             return true;
         }
@@ -369,7 +369,7 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
             if(msg=="null")return true;
             msg=replace_all_distinct(msg,"${at}",MessageSegment::at(event.user_id));
             msg=replace_all_distinct(msg,"${start_time}",to_string(config["time"]["morning"]["accept_start_hour"].as<int>()));
-            msg=replace_all_distinct(msg,"${start_time}",to_string(config["time"]["morning"]["accept_end_hour"].as<int>()));
+            msg=replace_all_distinct(msg,"${end_time}",to_string(config["time"]["morning"]["accept_end_hour"].as<int>()));
             send_group_message(event.group_id,msg);
             return true;
         }
