@@ -339,6 +339,10 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
                     user["night_sum"]=t.tm_hour*3600+t.tm_min*60+t.tm_sec;
                 }
 
+                if(t.tm_hour<start_hour) { //凌晨未跨天
+                    user["night_sum"]=user["night_sum"].get<long long>()+24*3600;
+                }
+
                 data[to_string(event.user_id)]=user;
                 os << data.dump(4) << endl;
                 os.close();
@@ -423,6 +427,10 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
                     user["day_sum"]=t.tm_hour*3600+t.tm_min*60+t.tm_sec;
                 }
 
+                if(t.tm_hour<start_hour) { //凌晨未跨天
+                    user["day_sum"]=user["day_sum"].get<long long>()+24*3600;
+                }
+
                 data[to_string(event.user_id)]=user;
                 os << data.dump(4) << endl;
                 os.close();
@@ -461,6 +469,7 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
             int night_counts=data[to_string(event.user_id)]["night_counts"].get<int>(),day_counts=data[to_string(event.user_id)]["day_counts"].get<int>();
             msg=replace_all_distinct(msg,"${number_asleep}",to_string(night_counts));
             msg=replace_all_distinct(msg,"${number_awake}",to_string(day_counts));
+
             long long night_sum=data[to_string(event.user_id)]["night_sum"].get<long long>(),day_sum=data[to_string(event.user_id)]["day_sum"].get<long long>();
             double night_secs=(double)night_sum/night_counts,day_secs=(double)day_sum/day_counts;
             int night_hours=(int)night_secs/3600;
@@ -469,8 +478,13 @@ bool Response(const int &eventtype,const GroupMessageEvent &event) {
             int day_hours=(int)day_secs/3600;
             int day_minutes=((int)day_secs-day_hours*3600)/60;
             int day_seconds=(int)day_secs%60;
+
+            if(night_hours>=24)night_hours-=24; //有可能>24
+            if(day_hours>=24)day_hours-=24;
+
             msg=replace_all_distinct(msg,"${avg_sleep}",to_string(night_hours)+"时"+to_string(night_minutes)+"分"+to_string(night_seconds)+"秒");
             msg=replace_all_distinct(msg,"${avg_wake}",to_string(day_hours)+"时"+to_string(day_minutes)+"分"+to_string(day_seconds)+"秒");
+
             GroupMember gm=get_group_member_info(event.group_id,event.user_id);
             string call;
             if(gm.sex==cq::Sex::FEMALE)call=config["call"]["females"].as<string>();
